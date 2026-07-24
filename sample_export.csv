@@ -1,0 +1,49 @@
+# Sync backend (Google Apps Script)
+
+`AppsScript-Backend.gs` is a bound Apps Script that turns a blank Google
+Sheet into a 5-tab tracker kept in sync with the client app via a small
+JSON API.
+
+## Entry points
+
+- `doPost(e)` - the only HTTP entry point, handling two `action` values:
+  - `"setup"` → `installMasterTemplate_()` builds/repairs all five sheets
+  - `"upsertDay"` → `saveDay_(payload)` writes one row into **Raw Data**,
+    matched (and overwritten, not duplicated) by a composite
+    `"{challenge}-day-{n}"` storage key
+- `onOpen()` - adds a **75 Challenge** menu to the spreadsheet UI with
+  shortcuts to Daily Diary / Dashboard / Raw Data and a manual
+  "Create / refresh tabs" action. This menu is navigation only - it
+  never writes data itself, since all data entry happens client-side.
+
+## Design notes
+
+- **Raw Data is the only writable sheet.** Start Here, Daily Diary,
+  Dashboard, and Challenge Rules are built entirely from
+  `INDEX`/`MATCH`/`FILTER`/`COUNTIFS` formulas that read Raw Data by
+  header name (see `col_()` / `lookupFormula_()` / `statusFormula_()`).
+  It's a single-source-of-truth setup: the views can't drift out of
+  sync with the underlying data because they don't hold their own copy
+  of it in the first place.
+- **Schema changes don't lose data.** `setupRawData_()` reads whatever
+  headers already exist in the sheet, remaps old rows onto the current
+  `RAW_HEADERS` list by name, and only then rewrites the sheet. That
+  means re-running setup after an update to this script keeps existing
+  entries instead of wiping them.
+- **No external dependencies.** This runs entirely on Google's V8 Apps
+  Script runtime. No npm packages, no clasp build step needed to read
+  or deploy it (though `clasp` works fine if you'd rather have a local
+  dev loop).
+
+## Local development
+
+Apps Script code isn't really unit-testable outside the Google runtime
+without extra tooling (mocking `SpreadsheetApp`, mainly), so this file
+stays small and readable rather than clever. The client-side logic it
+mirrors (the payload shape, day-completion rules) is unit tested
+though, see `../src/challengeRules.js` and `../tests/`.
+
+## Deploying
+
+See the root [README](../README.md#google-sheets-sync-setup) for the
+full step-by-step deployment walkthrough.

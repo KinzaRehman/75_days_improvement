@@ -1,0 +1,105 @@
+# Architecture
+
+The project splits into four layers that don't depend on each other
+much. You can read, test, or swap out any one of them without touching
+the rest.
+
+```mermaid
+flowchart LR
+    subgraph Client["Client app (app/)"]
+        UI["Single-file HTML/CSS/JS SPA<br/>localStorage persistence<br/>zero build step"]
+    end
+
+    subgraph Logic["Extracted core logic (src/)"]
+        DateUtils["dateUtils.js"]
+        Rules["challengeRules.js"]
+        Streak["streak.js"]
+        CSV["csvExport.js"]
+        Library["workoutLibrary.js"]
+    end
+
+    subgraph Sync["Sync backend (backend/)"]
+        AppsScript["Google Apps Script Web App<br/>doPost(setup | upsertDay)"]
+        RawData[("Raw Data sheet<br/>(source of truth)")]
+        Views["Start Here / Daily Diary /<br/>Dashboard / Rules<br/>(pure formulas, read-only views)"]
+    end
+
+    subgraph DataScience["Analytics + AI (analytics/, ai/)"]
+        Analyze["analyze_progress.py<br/>pandas + matplotlib"]
+        Insight["generate_weekly_insight.py<br/>mock rules OR live LLM call"]
+    end
+
+    UI -- "same algorithms as" --> Logic
+    UI -- "POST JSON" --> AppsScript
+    AppsScript --> RawData
+    RawData -- "INDEX/MATCH formulas" --> Views
+    UI -- "Export CSV" --> Analyze
+    Analyze --> Insight
+```
+
+## 1. Client app (`app/`)
+
+A single dependency-free HTML file, on purpose. The product ships as a
+file a non-technical buyer downloads and double-clicks. No install, no
+build step, no account. All state lives in `localStorage`.
+
+That creates a real tension: "ship one HTML file" and "write testable,
+modular code" pull in opposite directions. The compromise is that the
+interesting logic (date math, challenge rules, the workout-shuffle
+algorithm, CSV building) is mirrored in `src/` as small, pure,
+unit-tested modules. Next section.
+
+## 2. Extracted core logic (`src/`)
+
+Pure functions, no DOM, no I/O, no globals. Each module maps directly to
+a piece of the client app's inline `<script>`:
+
+| Module | What it owns |
+|---|---|
+| `dateUtils.js` | Parsing the start date, computing the 75-day window, "days left," and "which day number is today" |
+| `challengeRules.js` | The Hard/Medium/Soft rule sets and day-completion logic |
+| `streak.js` | Current-streak calculation |
+| `csvExport.js` | CSV escaping/row-building |
+| `workoutLibrary.js` | Difficulty inference from messy source data, category/difficulty/equipment filtering, and the "don't repeat a workout shown in the last 7 days" shuffle algorithm |
+
+These are exercised by `tests/` using Node's built-in test runner
+(`node --test`) - zero external test framework dependency, runs the same
+way in CI as it does locally.
+
+## 3. Sync backend (`backend/`)
+
+A Google Apps Script Web App bound to a Google Sheet. It exposes a
+single `doPost` entry point handling two actions:
+
+- `setup` - builds/repairs five sheet tabs
+- `upsertDay` - writes (or updates, matched by a composite storage key)
+  one row per challenge-day into **Raw Data**
+
+Everything except Raw Data (**Start Here**, **Daily Diary**,
+**Dashboard**, **Challenge Rules**) is built entirely from spreadsheet
+formulas that look values up in Raw Data. It's basically a
+single-source-of-truth setup: there's exactly one place data gets
+written, and every other view derives from it instead of holding its
+own copy that could drift out of sync.
+
+## 4. Analytics + AI (`analytics/`, `ai/`)
+
+- `analytics/analyze_progress.py` reads a real "Export CSV" file from
+  the app and produces a console summary (completion rate, streak,
+  mood breakdown, energy correlation) plus a matplotlib chart.
+- `ai/generate_weekly_insight.py` reuses that same summarizing code and
+  turns it into a short natural-language recap, either via a
+  deterministic rule-based generator (`--mode mock`, no dependencies or
+  network) or a real Claude API call (`--mode live`, needs
+  `ANTHROPIC_API_KEY`). The prompt-construction is shared between both
+  modes, so switching from demo to live is a one-flag change.
+
+## Why bother splitting it up this way
+
+I wanted someone skimming this repo to be able to tell, pretty quickly,
+which decisions were about shipping a working product to a
+non-technical buyer (the single HTML file, localStorage, Google Sheets
+as a cheap backend) and which were about showing engineering practice
+(extracted and tested logic, CI, an actual data pipeline). Both things
+are true here at once. The folder structure is just trying to keep one
+from getting in the way of the other.
