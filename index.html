@@ -1,0 +1,1410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>75 Challenge Tracker | Hard · Medium · Soft</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8C%BF%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    /* ============ THEME TOKENS ============ */
+    :root, [data-theme="pastel"]{
+      --page-bg: radial-gradient(circle at 8% 10%, rgba(198,151,73,.18), transparent 25%), radial-gradient(circle at 92% 5%, rgba(138,165,142,.25), transparent 30%), linear-gradient(145deg,#f8f3eb 0%,#fff9ef 45%,#eef3ec 100%);
+      --paper: rgba(255,253,248,.85);
+      --paper-solid:#fffaf4;
+      --rule-bg:#fbf7ee;
+      --kpi-grad:linear-gradient(180deg,#fffaf0,#f6efe3);
+      --ink:#26332d;
+      --muted:#708074;
+      --accent:#8aa58e;
+      --accent-strong:#44624a;
+      --chip:#fbf1dc;
+      --gold:#c69749;
+      --rose:#d98f7f;
+      --line:#e8decf;
+      --shadow:0 18px 45px rgba(72,54,34,.12);
+      --blur:14px;
+    }
+    [data-theme="dark"]{
+      --page-bg: radial-gradient(circle at 10% 0%, rgba(139,92,246,.22), transparent 32%), radial-gradient(circle at 92% 8%, rgba(56,189,248,.16), transparent 35%), linear-gradient(160deg,#0c0a14 0%,#161228 45%,#0c0a14 100%);
+      --paper: rgba(255,255,255,.045);
+      --paper-solid: rgba(255,255,255,.06);
+      --rule-bg: rgba(255,255,255,.04);
+      --kpi-grad: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      --ink:#f1eefb;
+      --muted:#a29cc4;
+      --accent:#9f7bef;
+      --accent-strong:#7c4fe0;
+      --chip: rgba(139,92,246,.16);
+      --gold:#f2b872;
+      --rose:#f472b6;
+      --line: rgba(255,255,255,.10);
+      --shadow: 0 18px 45px rgba(0,0,0,.5);
+      --blur:18px;
+    }
+    [data-theme="light"]{
+      --page-bg: radial-gradient(circle at 6% 8%, rgba(109,91,208,.10), transparent 30%), radial-gradient(circle at 94% 4%, rgba(96,165,250,.14), transparent 35%), linear-gradient(160deg,#f7f7fc 0%,#ffffff 45%,#f2f3fa 100%);
+      --paper: #ffffff;
+      --paper-solid: #f7f7fc;
+      --rule-bg:#f5f5fb;
+      --kpi-grad: linear-gradient(180deg,#fafaff,#f1f1f9);
+      --ink:#1f2333;
+      --muted:#797f95;
+      --accent:#8577dd;
+      --accent-strong:#5d4bc4;
+      --chip:#efedfb;
+      --gold:#e6a13a;
+      --rose:#ee7c95;
+      --line:#e7e7f2;
+      --shadow:0 14px 34px rgba(31,36,48,.09);
+      --blur:0px;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      min-height:100vh;
+      background:var(--page-bg);
+      color:var(--ink);
+      font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      padding:28px;
+      transition:background .3s ease, color .3s ease;
+    }
+    .wrap{max-width:1420px;margin:0 auto}
+    .hero{
+      background:var(--paper);
+      border:1px solid var(--line);
+      border-radius:36px;
+      padding:28px;
+      box-shadow:var(--shadow);
+      display:grid;
+      grid-template-columns:1.35fr .65fr;
+      gap:22px;
+      backdrop-filter: blur(var(--blur));
+    }
+    @media(max-width:940px){.hero{grid-template-columns:1fr}body{padding:14px}.main{grid-template-columns:1fr!important}.settings{grid-template-columns:1fr!important}.timeline{grid-template-columns:1fr!important}}
+    .eyebrow{letter-spacing:.18em;text-transform:uppercase;color:var(--accent-strong);font-size:.78rem;font-weight:800;margin-bottom:8px}
+    h1{font-family:'Fraunces',serif;font-size:clamp(2rem,4vw,4.4rem);line-height:.97;letter-spacing:-.02em;font-weight:900}
+    .subtitle{max-width:730px;color:var(--muted);font-size:1.03rem;line-height:1.55;margin-top:14px}
+    .pillrow{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+    .pill{border:1px solid var(--line);background:var(--paper-solid);border-radius:999px;padding:9px 13px;color:var(--muted);font-weight:700;font-size:.86rem}
+    .theme-select{display:flex;flex-direction:column;align-items:center;gap:10px;background:var(--paper);border:1px solid var(--line);border-radius:24px;padding:14px 20px;margin-bottom:18px;box-shadow:var(--shadow);backdrop-filter:blur(var(--blur))}
+    .name-input{max-width:260px;text-align:center}
+    .theme-select-label{font-size:.75rem;font-weight:900;text-transform:uppercase;letter-spacing:.14em;color:var(--muted)}
+    #themeSection .themerow{margin-top:0;justify-content:center}
+    .themerow{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+    .theme-btn{border:1px solid var(--line);background:var(--paper-solid);border-radius:14px;padding:9px 14px;font-weight:800;font-size:.82rem;color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:.16s ease}
+    .theme-btn:hover{border-color:var(--gold);transform:translateY(-1px)}
+    .theme-btn.active{background:var(--accent-strong);color:white;border-color:var(--accent-strong)}
+    .challenge-card{background:#20352a;color:white;border-radius:28px;padding:22px;display:flex;flex-direction:column;justify-content:space-between;min-height:230px;position:relative;overflow:hidden;transition:background .25s ease}
+    .challenge-card:before{content:"";position:absolute;right:-50px;top:-60px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.10)}
+    .challenge-card .mini{opacity:.75;font-weight:700;text-transform:uppercase;letter-spacing:.12em;font-size:.75rem}
+    .challenge-card .big{font-family:'Fraunces',serif;font-size:2.1rem;font-weight:900;margin-top:10px}
+    .challenge-card .ruleline{font-size:.9rem;line-height:1.55;opacity:.92;margin-top:10px}
+    .buttons{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:20px}
+    .challenge-btn{border:1px solid var(--line);border-radius:20px;padding:14px 8px;background:var(--paper-solid);cursor:pointer;font-weight:900;color:var(--ink);box-shadow:0 7px 16px rgba(0,0,0,.05);transition:.18s ease}
+    .challenge-btn:hover{transform:translateY(-2px);border-color:var(--gold)}
+    .challenge-btn:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+    .challenge-btn.active{background:var(--accent-strong);color:white;border-color:var(--accent-strong)}
+
+    .timeline{background:var(--paper);border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow);margin-top:18px;padding:18px 22px;display:grid;grid-template-columns:1.1fr .9fr .9fr 1fr;gap:16px;align-items:end;backdrop-filter:blur(var(--blur))}
+    .timeline .field label{display:block;font-size:.78rem;font-weight:900;color:var(--muted);margin-bottom:7px;text-transform:uppercase;letter-spacing:.08em}
+    .timeline .readout{background:var(--rule-bg);border:1px solid var(--line);border-radius:16px;padding:11px 13px;font-weight:800}
+    .timeline .readout .small{font-size:.72rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:3px}
+    .todaybtn{width:100%}
+
+    details.help{background:var(--paper);border:1px solid var(--line);border-radius:22px;margin-top:18px;box-shadow:var(--shadow);overflow:hidden;backdrop-filter:blur(var(--blur))}
+    details.help summary{list-style:none;cursor:pointer;padding:16px 20px;font-weight:900;display:flex;align-items:center;justify-content:space-between;gap:10px}
+    details.help summary::-webkit-details-marker{display:none}
+    details.help summary .chev{transition:transform .2s ease;color:var(--accent-strong)}
+    details.help[open] summary .chev{transform:rotate(90deg)}
+    .help-body{padding:0 20px 20px;color:var(--muted);font-size:.92rem;line-height:1.6}
+    .help-body h3{font-family:'Fraunces',serif;color:var(--ink);font-size:1rem;margin:14px 0 6px}
+    .help-body ol,.help-body ul{margin:6px 0 6px 18px}
+    .help-body li{margin:4px 0}
+    .help-body code{background:var(--rule-bg);border-radius:6px;padding:2px 6px;font-size:.85em;color:var(--accent-strong)}
+    .help-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+    @media(max-width:760px){.help-grid{grid-template-columns:1fr}}
+
+    .settings{display:grid;grid-template-columns:1.5fr .5fr .5fr;gap:12px;margin:18px 0}
+    .settings input{width:100%;border:1px solid var(--line);border-radius:18px;padding:13px 14px;background:var(--paper-solid);font:inherit;color:var(--ink)}
+    button{font:inherit}
+    .btn{border:none;border-radius:18px;padding:13px 16px;font-weight:900;cursor:pointer;transition:.18s ease;white-space:nowrap}
+    .btn.primary{background:var(--accent-strong);color:white}
+    .btn.secondary{background:var(--paper-solid);border:1px solid var(--line);color:var(--ink)}
+    .btn.danger{background:rgba(214,88,64,.12);color:#d65840;border:1px solid rgba(214,88,64,.35)}
+    .btn:hover{transform:translateY(-1px)}
+    .btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+    .sync-note{font-size:.85rem;color:var(--muted);margin:-8px 0 18px 4px;line-height:1.4}
+    .status{display:inline-flex;align-items:center;gap:8px;border-radius:999px;border:1px solid var(--line);padding:8px 12px;background:var(--paper-solid);font-size:.84rem;font-weight:800;color:var(--muted)}
+    .main{display:grid;grid-template-columns:minmax(0,1fr) 430px;gap:20px;align-items:start}
+    .panel{background:var(--paper);border:1px solid var(--line);border-radius:28px;box-shadow:var(--shadow);overflow:hidden;backdrop-filter:blur(var(--blur))}
+    .panel-head{padding:20px 22px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:14px;align-items:center;flex-wrap:wrap}
+    .panel-title{font-family:'Fraunces',serif;font-weight:800;font-size:1.2rem;letter-spacing:-.01em}
+    .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:18px 22px;border-bottom:1px solid var(--line)}
+    @media(max-width:640px){.kpis{grid-template-columns:repeat(2,1fr)}.buttons{grid-template-columns:1fr}.days{grid-template-columns:repeat(auto-fill,minmax(48px,1fr))!important}}
+    .kpi{background:var(--kpi-grad);border:1px solid var(--line);border-radius:22px;padding:14px}
+    .kpi .num{font-size:1.55rem;font-weight:950;color:var(--accent-strong)}
+    .kpi .label{font-size:.78rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:900;margin-top:4px}
+    .rules{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;padding:18px 22px;border-bottom:1px solid var(--line)}
+    @media(max-width:1000px){.rules{grid-template-columns:1fr 1fr}.rules .rule:nth-child(5){grid-column:1/-1}}
+    .rule{background:var(--rule-bg);border:1px solid var(--line);border-radius:20px;padding:13px;min-height:98px}
+    .rule .icon{font-size:1.2rem}.rule b{display:block;margin:6px 0 4px}.rule span{font-size:.82rem;color:var(--muted);line-height:1.35}
+    .quote-card{margin:0 22px 18px;padding:16px 18px;border-radius:20px;background:linear-gradient(135deg, var(--accent-strong), var(--accent));color:white;font-family:'Fraunces',serif;font-size:1.02rem;line-height:1.5;font-weight:600;position:relative}
+    .quote-card .qlabel{font-family:Inter,sans-serif;font-size:.72rem;text-transform:uppercase;letter-spacing:.12em;opacity:.8;font-weight:800;margin-bottom:6px;display:block}
+
+    .lib-panel{margin-top:20px}
+    .lib-filters{padding:18px 22px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:12px}
+    .filter-row{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start}
+    .filter-row .fr-label{font-size:.75rem;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-right:4px;min-width:78px;padding-top:8px}
+    .filter-row .chiprow{display:flex;flex-wrap:wrap;gap:8px;flex:1}
+    .lib-chip{border:1px solid var(--line);background:var(--paper-solid);border-radius:999px;padding:7px 12px;font-size:.8rem;font-weight:800;color:var(--ink);cursor:pointer;transition:.15s ease;white-space:nowrap}
+    .lib-chip:hover{border-color:var(--gold)}
+    .lib-chip.active{background:var(--accent-strong);color:#fff;border-color:var(--accent-strong)}
+    .lib-body{display:grid;grid-template-columns:1.1fr .9fr;gap:18px;padding:20px 22px}
+    @media(max-width:980px){.lib-body{grid-template-columns:1fr}}
+    .featured-card{background:var(--rule-bg);border:1px solid var(--line);border-radius:22px;padding:16px}
+    .video-embed{position:relative;width:100%;padding-top:56.25%;border-radius:16px;overflow:hidden;background:#000;margin-top:10px;display:block;text-decoration:none}
+    .video-embed .thumb{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+    .video-embed .play-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.25);transition:background .15s ease}
+    .video-embed:hover .play-overlay{background:rgba(0,0,0,.4)}
+    .video-embed .play-circle{width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,.92);display:flex;align-items:center;justify-content:center;font-size:1.3rem;color:#20352a;box-shadow:0 6px 18px rgba(0,0,0,.35)}
+    .video-embed .watch-label{position:absolute;left:10px;bottom:10px;background:rgba(0,0,0,.65);color:#fff;font-size:.72rem;font-weight:800;padding:5px 10px;border-radius:999px}
+    .video-embed.no-embed{display:flex;align-items:center;justify-content:center;padding-top:0;height:170px;background:var(--chip);color:var(--accent-strong);font-weight:800;text-align:center;padding:20px}
+    .video-embed.no-embed a{color:var(--accent-strong)}
+    .badge-row{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+    .badge{font-size:.72rem;font-weight:800;padding:4px 10px;border-radius:999px;background:var(--chip);color:var(--accent-strong);border:1px solid var(--line)}
+    .lib-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+    .lib-actions .btn{flex:none;padding:10px 14px;font-size:.85rem}
+    .tip-box{background:var(--chip);border:1px solid var(--line);border-radius:14px;padding:10px 12px;font-size:.8rem;color:var(--muted);margin-top:12px;line-height:1.4}
+    .nudge-banner{background:linear-gradient(135deg,var(--rose),var(--gold));color:#fff;border-radius:16px;padding:12px 14px;font-size:.85rem;font-weight:700;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+    .nudge-banner button{background:rgba(255,255,255,.28);border:1px solid rgba(255,255,255,.55);color:#fff;border-radius:999px;padding:6px 12px;font-weight:800;font-size:.78rem;cursor:pointer;white-space:nowrap}
+    .lib-list{max-height:360px;overflow:auto;display:flex;flex-direction:column;gap:8px}
+    .lib-row{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--paper-solid);border:1px solid var(--line);border-radius:14px;padding:10px 12px;cursor:pointer;transition:.15s ease}
+    .lib-row:hover{border-color:var(--gold)}
+    .lib-row.picked{border-color:var(--accent-strong);box-shadow:0 0 0 2px rgba(198,151,73,.25)}
+    .lib-row .lr-title{font-size:.85rem;font-weight:800;color:var(--ink)}
+    .lib-row .lr-meta{font-size:.72rem;color:var(--muted);margin-top:2px}
+    .lib-row .fav-star{background:none;border:none;font-size:1.1rem;cursor:pointer;flex-shrink:0;line-height:1}
+    .lib-subhead{font-size:.78rem;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:14px 0 8px}
+    .lib-subhead:first-child{margin-top:0}
+    .fav-row{display:flex;flex-wrap:wrap;gap:6px;min-height:20px}
+    .history-chip{display:inline-flex;align-items:center;gap:6px;background:var(--paper-solid);border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-size:.75rem;font-weight:700;color:var(--muted);cursor:pointer}
+    .history-chip:hover{border-color:var(--gold)}
+
+    .mode-row{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+    .mode-btn{flex:1;min-width:140px;border:1px solid var(--line);background:var(--paper-solid);color:var(--ink);border-radius:14px;padding:9px 10px;font-weight:800;font-size:.82rem;cursor:pointer;transition:.15s ease}
+    .mode-btn:hover{border-color:var(--gold)}
+    .mode-btn.active{background:var(--accent-strong);color:#fff;border-color:var(--accent-strong)}
+    .lib-filters-compact{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:4px}
+    .lib-filters-compact select{font-size:.8rem;padding:9px 8px}
+    #libraryWidget .featured-card{padding:12px}
+    #libraryWidget .video-embed{margin-top:8px}
+    #libraryWidget .lib-list{max-height:220px}
+    .lib-browse{margin-top:10px;border:1px solid var(--line);border-radius:14px;background:var(--rule-bg);padding:0}
+    .lib-browse summary{list-style:none;cursor:pointer;padding:10px 12px;font-size:.82rem;font-weight:800;color:var(--accent-strong)}
+    .lib-browse summary::-webkit-details-marker{display:none}
+    .lib-browse .lib-subhead{padding:0 12px;margin:10px 0 6px}
+    .lib-browse .fav-row{padding:0 12px}
+    .lib-browse .lib-list{margin:0 12px 12px}
+    @media(max-width:520px){.lib-filters-compact{grid-template-columns:1fr}.mode-btn{min-width:0}}
+    .days{display:grid;grid-template-columns:repeat(auto-fill,minmax(66px,1fr));gap:10px;padding:22px;max-height:640px;overflow:auto}
+    .day{border:1px solid var(--line);background:var(--paper-solid);border-radius:20px;min-height:64px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-weight:900;transition:.14s ease;color:var(--muted);position:relative}
+    .day:hover{transform:scale(.97);border-color:var(--gold)}
+    .day.complete{background:linear-gradient(145deg,var(--accent-strong),var(--accent));color:white;border-color:var(--accent-strong)}
+    .day.selected{box-shadow:0 0 0 3px rgba(198,151,73,.4);border-color:var(--gold)}
+    .day.today:after{content:"•";position:absolute;top:4px;right:8px;color:var(--gold);font-size:1.4rem;line-height:1}
+    .day .dot{font-size:.68rem;opacity:.82;font-weight:800}
+    .journal{position:sticky;top:16px;padding:22px;max-height:calc(100vh - 32px);overflow-y:auto}
+    @media(max-width:940px){.journal{position:static;max-height:none;overflow-y:visible}}
+    .selected-badge{display:inline-flex;align-items:center;gap:8px;background:var(--chip);border:1px solid var(--line);border-radius:999px;padding:9px 13px;font-weight:950;margin-bottom:14px}
+    .field{margin:14px 0}.field label{display:block;font-size:.82rem;font-weight:900;color:var(--muted);margin-bottom:7px;text-transform:uppercase;letter-spacing:.08em}
+    textarea,input,select{font-family:inherit}
+    textarea,.text-input,select{width:100%;border:1px solid var(--line);background:var(--paper-solid);border-radius:18px;padding:12px 13px;color:var(--ink);font-size:.95rem;outline:none}
+    textarea:focus,.text-input:focus,select:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(198,151,73,.12)}
+    textarea{resize:vertical;min-height:90px;line-height:1.45}
+    /* Native <option> popups are rendered by the OS/browser, not by our theme -
+       force a plain light popup with dark text so options stay readable no
+       matter which theme (especially Dark) is active on the page itself. */
+    select option{color:#1f2333;background:#ffffff}
+    .checks{display:grid;gap:9px;margin:14px 0}
+    .check{display:flex;gap:14px;align-items:center;justify-content:center;text-align:center;background:var(--rule-bg);border:1px solid var(--line);border-radius:16px;padding:10px 14px}
+    .check input{width:15px;height:15px;accent-color:var(--accent-strong);flex-shrink:0;margin-right:2px}
+    .check span{font-size:.88rem;line-height:1.35;color:var(--ink);font-weight:750}
+    .check b{color:var(--accent-strong)}
+    .check em{font-style:normal;color:var(--muted);font-weight:700}
+    .mini-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.actions .btn{flex:1}
+    .footer-actions{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:18px 22px;border-top:1px solid var(--line)}
+    .tiny{font-size:.78rem;color:var(--muted);line-height:1.45;margin-top:10px}
+    .toast{position:fixed;right:18px;bottom:18px;background:#24382c;color:white;padding:13px 16px;border-radius:18px;box-shadow:0 18px 45px rgba(0,0,0,.3);font-weight:850;opacity:0;transform:translateY(10px);transition:.25s ease;pointer-events:none;z-index:10;max-width:330px}
+    .toast.show{opacity:1;transform:translateY(0)}
+    .page-footer{text-align:center;color:var(--muted);font-size:.82rem;padding:26px 10px 6px;line-height:1.6}
+    .page-footer strong{color:var(--accent-strong)}
+    #fileImportInput{display:none}
+
+    @media print{
+      body{background:white;color:#111;padding:0}
+      [data-theme]{ --ink:#111; }
+      .hero,.settings,.sync-note,details.help,.footer-actions,.actions,.toast,#resetBtn,.themerow,#themeSection{display:none!important}
+      .main{grid-template-columns:1fr!important}
+      .journal{position:static;max-height:none;overflow-y:visible}
+      .panel{box-shadow:none;border:1px solid #ccc}
+      .days{max-height:none;overflow:visible}
+    }
+  </style>
+</head>
+<body data-theme="pastel">
+  <div class="wrap">
+    <section class="theme-select" id="themeSection">
+      <div class="theme-select-label">Theme</div>
+      <div class="themerow" id="themeButtons"></div>
+    </section>
+
+    <section class="theme-select" id="nameSection">
+      <label class="theme-select-label" for="userName">Fill In Name:</label>
+      <input type="text" id="userName" class="text-input name-input" placeholder="Your name" />
+    </section>
+
+    <section class="hero">
+      <div>
+        <div class="eyebrow">Google Sheets + Daily Diary</div>
+        <h1 id="mainTitle">75 Challenge Tracker</h1>
+        <p class="subtitle">Pick Hard, Medium, or Soft, choose a look you love, and get a fresh daily quote as you go. The checklist, countdown, and journal all update automatically - your progress saves right in this browser and can optionally sync to a Google Sheet.</p>
+        <div class="pillrow">
+          <span class="pill">75 days</span>
+          <span class="pill">Works fully offline</span>
+          <span class="pill">Auto end date + countdown</span>
+          <span class="pill">Daily quote</span>
+        </div>
+        <div class="buttons" id="challengeButtons"></div>
+      </div>
+      <aside class="challenge-card">
+        <div>
+          <div class="mini">Selected challenge</div>
+          <div class="big" id="selectedChallengeTitle">75 HARD</div>
+          <div class="ruleline" id="selectedChallengeSummary"></div>
+        </div>
+        <span class="status" id="syncStatus">● Local mode</span>
+      </aside>
+    </section>
+
+
+    <section class="timeline">
+      <div class="field">
+        <label>Start date</label>
+        <input class="text-input" type="date" id="startDate" />
+      </div>
+      <div class="readout"><span class="small">End date (auto)</span><span id="endDateOut">-</span></div>
+      <div class="readout"><span class="small">Days left</span><span id="daysLeftOut">-</span></div>
+      <button class="btn secondary todaybtn" id="jumpTodayBtn">📍 Jump to today's day</button>
+    </section>
+
+    <details class="help" id="helpPanel">
+      <summary><span>✨ New here? Read this first - how the tracker works</span><span class="chev">›</span></summary>
+      <div class="help-body">
+        <div class="help-grid">
+          <div>
+            <h3>Using it day to day</h3>
+            <ol>
+              <li>Choose <b>Hard</b>, <b>Medium</b>, or <b>Soft</b> - each has its own rules, checklist, and 75-day board.</li>
+              <li>Set your <b>start date</b> once - the end date and days-left countdown fill in automatically, and "Jump to today" takes you straight to the right day.</li>
+              <li>Click any day number to open its checklist, quote, and journal on the right.</li>
+              <li>Check off each requirement as you go. A day turns green once every <em>required</em> box is checked.</li>
+              <li>Click <b>Save day + sync</b> to lock it in. Everything also autosaves as you type.</li>
+            </ol>
+            <h3>Your data, and keeping it safe</h3>
+            <p>Everything is stored privately in this browser using local storage - nothing is uploaded unless you set up Google Sheet sync. That also means clearing your browser data or opening this file on a different device will not carry your progress over.</p>
+            <p>Click <b>Backup all data</b> regularly to save a small <code>.json</code> file you can restore from with <b>Restore backup</b> if anything gets wiped. <b>Export CSV</b> gives you a spreadsheet-friendly copy of the challenge you're currently viewing.</p>
+          </div>
+          <div>
+            <h3>Optional: sync to Google Sheets</h3>
+            <p>This turns your Sheet into a live backup and a printable diary. It takes about five minutes, once:</p>
+            <ol>
+              <li>Create a blank Google Sheet.</li>
+              <li>Open <code>Extensions → Apps Script</code>, delete the placeholder code, and paste in the backend script included with this download (<code>AppsScript-Backend.gs.txt</code>).</li>
+              <li>Click <b>Deploy → New deployment → Web app</b>. Set "Who has access" to <b>Anyone</b>, then deploy and copy the web app URL (it ends in <code>/exec</code>).</li>
+              <li>Paste that URL into the field below and click <b>Save URL</b>, then <b>Create/refresh tabs</b>.</li>
+            </ol>
+            <p>From then on, every <b>Save day + sync</b> also writes that day's data and journal entry into your Sheet. If you ever skip this step, the tracker still works completely on its own.</p>
+            <h3>A note on your purchase</h3>
+            <p>This tracker is for your own personal use. Please don't resell, redistribute, or share the file itself - thank you for supporting a small shop! 💛</p>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <section class="settings">
+      <input id="scriptUrl" placeholder="Paste your Google Apps Script Web App URL here - it should end in /exec" />
+      <button class="btn secondary" id="saveUrlBtn">Save URL</button>
+      <button class="btn primary" id="setupSheetBtn">Create/refresh tabs</button>
+    </section>
+    <p class="sync-note">Tip: the tracker works fully without a URL - Google Sheet sync only starts once you paste your Apps Script web app URL above. See "New here?" for step-by-step setup.</p>
+
+    <section class="main">
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <div class="panel-title">Progress Board</div>
+            <div class="tiny">Click a day to open its checklist and diary entry.</div>
+          </div>
+          <button class="btn danger" id="resetBtn">Reset selected challenge</button>
+        </div>
+        <div class="kpis">
+          <div class="kpi"><div class="num" id="completedKpi">0</div><div class="label">completed</div></div>
+          <div class="kpi"><div class="num" id="percentKpi">0%</div><div class="label">progress</div></div>
+          <div class="kpi"><div class="num" id="streakKpi">0</div><div class="label">current streak</div></div>
+          <div class="kpi"><div class="num" id="leftKpi">75</div><div class="label" id="leftKpiLabel">days left</div></div>
+        </div>
+        <div class="rules" id="rulesGrid"></div>
+        <div class="days" id="daysGrid"></div>
+        <div class="footer-actions">
+          <span class="status" id="saveStatus">● Nothing saved yet</span>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn secondary" id="exportCsvBtn">Export CSV</button>
+            <button class="btn secondary" id="backupJsonBtn">Backup all data</button>
+            <button class="btn secondary" id="restoreJsonBtn">Restore backup</button>
+            <input type="file" id="fileImportInput" accept="application/json" />
+          </div>
+        </div>
+      </div>
+
+      <aside class="panel journal">
+        <div class="selected-badge" id="selectedDayBadge">Day 1</div>
+        <div class="quote-card"><span class="qlabel">Quote for today</span><span id="quoteOfDay"></span></div>
+        <div class="field">
+          <label>Daily requirements</label>
+          <div class="checks" id="taskChecks"></div>
+        </div>
+
+        <div class="field">
+          <label>Today's workout</label>
+          <div class="mode-row">
+            <button class="mode-btn" data-mode="library" id="modeLibraryBtn">🎥 Pick from library</button>
+            <button class="mode-btn" data-mode="own" id="modeOwnBtn">🙋 I'll do my own workout</button>
+          </div>
+
+          <div id="libraryWidget">
+            <div class="lib-filters-compact">
+              <select id="libCategorySelect" class="text-input"></select>
+              <select id="libDifficultySelect" class="text-input"></select>
+              <select id="libEquipmentSelect" class="text-input"></select>
+            </div>
+            <div class="tiny" id="libCountStatus" style="margin:6px 0 2px"></div>
+            <div id="libNudge"></div>
+            <div class="featured-card" id="libFeatured"></div>
+            <div class="lib-actions">
+              <button class="btn primary" id="libShuffleBtn">🔀 Shuffle</button>
+              <button class="btn secondary" id="libFavBtn">⭐ Favorite</button>
+              <button class="btn secondary" id="libLogBtn">📝 Log to entry</button>
+            </div>
+            <details class="lib-browse">
+              <summary>⭐ Favorites, this week's history & full list</summary>
+              <div class="lib-subhead">⭐ Your favorites</div>
+              <div class="fav-row" id="libFavRow"></div>
+              <div class="lib-subhead">🗓️ Shuffled this week (won't repeat)</div>
+              <div class="fav-row" id="libHistoryRow"></div>
+              <div class="lib-subhead">All matching videos (<span id="libListCount">0</span>)</div>
+              <div class="lib-list" id="libList"></div>
+            </details>
+            <div class="tip-box">🔥 <b>Warm-up:</b> 3–5 min light cardio or dynamic stretches first. 🧊 <b>Cool-down:</b> 5 min static stretching after.</div>
+          </div>
+
+          <p class="tiny" id="ownWorkoutNote" style="display:none">No problem - just log what you did in Workout Notes below, and check off "workouts" once it's done.</p>
+        </div>
+
+        <div class="mini-grid">
+          <div class="field"><label>Water actual</label><input class="text-input" id="waterActual" placeholder="ex: 80 oz" /></div>
+          <div class="field"><label>Pages read</label><input class="text-input" id="pagesRead" placeholder="ex: 10" /></div>
+        </div>
+        <div class="mini-grid">
+          <div class="field"><label>Mood</label><select id="mood"><option></option><option>😊 Great</option><option>🙂 Good</option><option>😐 Okay</option><option>😩 Hard day</option><option>🔥 Motivated</option></select></div>
+          <div class="field"><label>Energy 1-10</label><input class="text-input" id="energy" type="number" min="1" max="10" placeholder="7" /></div>
+        </div>
+        <div class="field"><label>Weight / measurement optional</label><input class="text-input" id="weight" placeholder="optional" /></div>
+        <div class="field"><label>Workout notes</label><textarea id="workoutNotes" placeholder="What workout/activity did you do?"></textarea></div>
+        <div class="field"><label>Meals / nutrition</label><textarea id="meals" placeholder="What did you eat? Any treats or cravings?"></textarea></div>
+        <div class="field"><label>Diary reflection</label><textarea id="journal" placeholder="Wins, struggles, gratitude, lessons, tomorrow's focus..."></textarea></div>
+        <div class="actions">
+          <button class="btn primary" id="saveDayBtn">Save day + sync</button>
+          <button class="btn secondary" id="clearDayBtn">Clear day</button>
+        </div>
+        <p class="tiny" id="completionHint">The day marks complete when all required boxes are checked.</p>
+      </aside>
+    </section>
+
+    <footer class="page-footer">
+      <div>🌿 <strong>75 Challenge Tracker</strong> - made for your desk, your browser, and your 75 days.</div>
+      <div>For personal use only. Please don't resell or redistribute this file.</div>
+    </footer>
+  </div>
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const TOTAL_DAYS = 75;
+    const THEMES = [
+      { key:"dark", label:"Dark", emoji:"🌙" },
+      { key:"light", label:"Light", emoji:"☀️" },
+      { key:"pastel", label:"Pastel", emoji:"🌸" }
+    ];
+    const QUOTES = [
+      "Discipline is choosing between what you want now and what you want most.",
+      "Small daily choices are the compound interest of self-respect.",
+      "You don't have to be extreme, just consistent.",
+      "The body achieves what the mind believes.",
+      "Progress is quiet before it's visible.",
+      "Show up for yourself the way you'd show up for someone you love.",
+      "Every rep, every page, every glass of water is a vote for who you're becoming.",
+      "Motivation gets you started. Habit keeps you going.",
+      "Today's effort is tomorrow's evidence.",
+      "You are not starting over, you are starting stronger.",
+      "Comfort and growth rarely live in the same room.",
+      "Consistency is the quiet superpower.",
+      "Your future self is watching, and thanking you.",
+      "Hard days build the muscle that easy days can't.",
+      "One honest day beats seven perfect intentions.",
+      "Energy follows action, not the other way around.",
+      "Discipline is a form of self-love.",
+      "Keep the promise you made to yourself.",
+      "Slow progress is still progress.",
+      "You're not chasing perfect, you're chasing consistent.",
+      "The days you don't want to show up matter the most.",
+      "Strength is built one uncomfortable choice at a time.",
+      "Trust the process, not just the mood.",
+      "Nobody regrets the workout they finished.",
+      "Rest is part of the plan, not a break from it.",
+      "Your habits are voting for the person you'll become.",
+      "Do it for the version of you that gave up before.",
+      "A little progress each day adds up to big results.",
+      "The hardest part is starting. You've already done that.",
+      "You're allowed to go slow, just don't stop.",
+      "Every day is a fresh page, not a fresh judgment.",
+      "Growth is uncomfortable by design.",
+      "What you repeat, you become.",
+      "Show up. That's most of the battle.",
+      "You are capable of more than your excuses admit.",
+      "This is the version of hard that gets easier.",
+      "Small wins stack into big change.",
+      "Keep going. The turnaround always comes after the hardest part.",
+      "Your only competition is who you were yesterday.",
+      "Effort compounds quietly, then all at once.",
+      "Choose discomfort now so you can choose freedom later.",
+      "Discipline looks boring until it looks like results.",
+      "The work you do when no one's watching counts the most.",
+      "You don't need more time, you need more decision.",
+      "Every glass of water, every page, every step is progress you can feel.",
+      "Consistency doesn't need to be loud to be powerful.",
+      "You're allowed to be proud of small steps.",
+      "Momentum is built one done task at a time.",
+      "Today is a rep in the life you're building.",
+      "Be stubborn about your goals, flexible about your methods.",
+      "The version of you on day 75 is proud of day 1.",
+      "Take care of your body, it's carrying your whole future.",
+      "Habits are easier to keep than to start.",
+      "You're not behind, you're building.",
+      "A good day starts with a decision, not a mood.",
+      "Progress hides in the days that feel unremarkable.",
+      "What feels hard today is training for tomorrow.",
+      "You get to choose who shows up today.",
+      "Discipline is remembering what you want.",
+      "Every checked box is a promise kept.",
+      "You're building proof, not just progress.",
+      "The best time to keep going was yesterday. The next best time is now.",
+      "Some days you fight for motivation, other days it fights for you.",
+      "Keep your standards higher than your excuses.",
+      "You are the sum of what you repeat.",
+      "Real change happens in ordinary moments, not big ones.",
+      "Trust the boring, consistent work.",
+      "You're not just tracking days, you're tracking becoming.",
+      "The comeback is always stronger than the setback.",
+      "Give today the effort you want tomorrow to remember.",
+      "Strong habits are built in soft, quiet repetition.",
+      "You don't need to feel ready, you just need to begin.",
+      "Every day you choose yourself is a day well spent.",
+      "The finish line looks a lot like day one, just braver.",
+      "You made it to day 75. Look at what consistency built."
+    ];
+    const CATEGORY_META = {
+      fullbody: { label: "💪 Full Body & HIIT" },
+      strength: { label: "🏋️ Strength Training" },
+      pilatesbarre: { label: "🧘‍♀️ Pilates & Barre" },
+      yogastretch: { label: "🧘 Yoga & Stretching" },
+      boxingstep: { label: "🕺 Boxing & Step" },
+      core: { label: "🎯 Core & Abs" },
+      chair: { label: "🪑 Chair, Senior & Balance" },
+      walkdance: { label: "🚶 Walking, Cardio & Dance" },
+      household: { label: "🛋️ Household Item Workouts" },
+      prenatal: { label: "🤰 Prenatal & Postnatal" }
+    };
+
+    const WORKOUTS = [
+      { title:"30 min Full Body for TOTAL BEGINNERS (Standing)", channel:"MadFit", url:"https://www.youtube.com/watch?v=3rdsdh5fVeY", duration:"30 min", equipment:"None", impact:"Low", section:"fullbody", difficulty:"easy" },
+      { title:"30 Min Low Impact Cardio for Beginners (No Jumping)", channel:"HASfit", url:"https://www.youtube.com/watch?v=WyezJo6pqDQ", duration:"30 min", equipment:"None", impact:"Low", section:"fullbody", difficulty:"easy" },
+      { title:"30 Min No Jumping HIIT Cardio – All Standing", channel:"Sydney Cummings", url:"https://www.youtube.com/watch?v=HuYoYJX9pgU", duration:"30 min", equipment:"None", impact:"Low", section:"fullbody", difficulty:"easy" },
+      { title:"30 min Low Impact Full Body (No Jumping)", channel:"MadFit", url:"https://www.youtube.com/watch?v=yeLfaC9XIzQ", duration:"30 min", equipment:"None", impact:"Low", section:"fullbody", difficulty:"easy" },
+      { title:"Low Impact Total Body Cardio for Beginners", channel:"HASfit", url:"https://www.youtube.com/watch?v=BQc8aH38qc8", duration:"30 min", equipment:"None", impact:"Low", section:"fullbody", difficulty:"easy" },
+      { title:"30 Min No Equipment Full Body – Low Impact All Levels", channel:"Heather Robertson", url:"https://www.youtube.com/watch?v=X0zcWXLGcsc", duration:"30 min", equipment:"None", impact:"Low", section:"fullbody", difficulty:"easy" },
+      { title:"30 Min Low Impact Full Body – No Repeats, No Jumping", channel:"Sydney Cummings", url:"https://www.youtube.com/watch?v=5LwN80lJvZc", duration:"30 min", equipment:"None", impact:"Low", section:"fullbody", difficulty:"easy" },
+      { title:"30 Min Low Impact Cardio Workout at Home", channel:"HASfit", url:"https://hasfit.com/workouts/low-impact/30-min-low-impact-cardio-workout-at-home/", duration:"30 min", equipment:"None (opt. light weights)", impact:"Low", section:"fullbody", difficulty:"easy" },
+      { title:"30 Min Fat Burning Home Workout for Beginners", channel:"Team Body Project", url:"https://www.youtube.com/watch?v=gC_L9qAHVJ8", duration:"30 min", equipment:"None", impact:"Low", section:"fullbody", difficulty:"easy" },
+      { title:"30 min Beginner Pilates Full Body – Classical Pilates", channel:"Yoga with Kassandra", url:"https://www.youtube.com/watch?v=QW_0H-5udr0", duration:"30 min", equipment:"None", impact:"Low", section:"fullbody", difficulty:"easy" },
+      { title:"30 Min Full Body – At-Home Beginner Pilates", channel:"Move With Nicole", url:"https://www.youtube.com/watch?v=TbYkJXqdUP0", duration:"30 min", equipment:"None", impact:"Low", section:"fullbody", difficulty:"easy" },
+      { title:"30 Min Full Body Workout at Home", channel:"OSX", url:"https://www.youtube.com/watch?v=vUqFO_4tTmA", duration:"30 min", equipment:"None", impact:"Moderate", section:"fullbody", difficulty:"medium" },
+      { title:"30 Min Full Body – Strength & Fat Burn", channel:"OSX", url:"https://www.youtube.com/watch?v=iw67wvYWZ1k", duration:"30 min", equipment:"None", impact:"Moderate", section:"fullbody", difficulty:"medium" },
+      { title:"30 Min Full Body HIIT (No Jumping + No Equipment)", channel:"Sydney Cummings", url:"https://www.youtube.com/watch?v=T7KV4JHahWA", duration:"30 min", equipment:"None", impact:"Moderate", section:"fullbody", difficulty:"medium" },
+      { title:"30 Min Full Body Bodyweight Workout", channel:"Nourish Move Love (Lindsey Bomgren)", url:"https://www.nourishmovelove.com/zero-30-bodyweight-workout-strength/", duration:"30 min", equipment:"None", impact:"Moderate", section:"fullbody", difficulty:"medium" },
+      { title:"30-Minute HIIT Workout (No Equipment)", channel:"Nourish Move Love", url:"https://www.nourishmovelove.com/no-equipment-workout-30-minute-hiit/", duration:"30 min", equipment:"None (opt. mat)", impact:"Moderate", section:"fullbody", difficulty:"medium" },
+      { title:"30 Min Intense HIIT Cardio – No Repeats", channel:"TIFFxDAN", url:"https://tiffxdan.com/hiit-no-equipment/", duration:"30 min", equipment:"None", impact:"Moderate–High", section:"fullbody", difficulty:"hard" },
+      { title:"30 Min Hardcore HIIT Workout – No Repeats", channel:"TIFFxDAN", url:"https://tiffxdan.com/hiit-no-equipment/", duration:"30 min", equipment:"None", impact:"Moderate–High", section:"fullbody", difficulty:"hard" },
+      { title:"30 Min Fat Burning HIIT Workout – No Repeats", channel:"TIFFxDAN", url:"https://tiffxdan.com/hiit-no-equipment/", duration:"30 min", equipment:"None", impact:"Moderate", section:"fullbody", difficulty:"medium" },
+      { title:"30 Min No Jumping All Standing HIIT with Weights", channel:"Grow With Anna", url:"https://www.youtube.com/watch?v=WxAkMuXERBE", duration:"30 min", equipment:"Light weights (optional)", impact:"Low–Moderate", section:"fullbody", difficulty:"medium" },
+      { title:"30-Min Full Body Workout At Home (Dumbbell)", channel:"Nourish Move Love", url:"https://www.nourishmovelove.com/full-body-workout-at-home/", duration:"30 min", equipment:"Dumbbells", impact:"Moderate", section:"fullbody", difficulty:"medium" },
+      { title:"30-Minute At-Home Full Body Workout", channel:"Nourish Move Love", url:"https://www.nourishmovelove.com/at-home-full-body-workout/", duration:"30 min", equipment:"Dumbbells (optional)", impact:"Moderate", section:"fullbody", difficulty:"medium" },
+      { title:"30 Min Full Body – No Equipment HIIT (20 Exercises)", channel:"Calum Taylor / Taylor Made Training", url:"https://www.taylormadetraining.uk/tmt-workouts/30-min-full-body-workout-no-equipment-complete-hiit-workout", duration:"30 min", equipment:"Mat (optional)", impact:"Moderate", section:"fullbody", difficulty:"medium" },
+      { title:"30 Min Full Body – Intermediate Pilates", channel:"Move With Nicole", url:"https://www.youtube.com/watch?v=lBCBSy9cNT0", duration:"30 min", equipment:"None", impact:"Low–Moderate", section:"fullbody", difficulty:"medium" },
+      { title:"30-Minute Pilates At Home (Full Body Sculpt)", channel:"Nourish Move Love", url:"https://www.nourishmovelove.com/pilates-at-home/", duration:"30 min", equipment:"Light dumbbells (optional)", impact:"Low–Moderate", section:"fullbody", difficulty:"medium" },
+      { title:"30 Min Pilates Workout – Intermediate Mat Pilates", channel:"Move With Nicole", url:"https://www.youtube.com/watch?v=1TXj_U23bPs", duration:"30 min", equipment:"None", impact:"Low–Moderate", section:"fullbody", difficulty:"medium" },
+      { title:"35 Min Full Body Dumbbell Workout – Torch Calories Fast", channel:"TIFFxDAN", url:"https://tomsguide.com/wellness/fitness/no-time-for-the-gym-strengthen-your-entire-body-with-this-35-minute-dumbbell-workout-instead", duration:"35 min", equipment:"Dumbbells", impact:"Low (no jumping)", section:"fullbody", difficulty:"easy" },
+      { title:"40 Min Yoga Pilates Fusion – Strength, Stretch & Stress Relief", channel:"Exercise180 (Annalicia Niemela)", url:"https://exercise180.substack.com/t/yoga-pilates-fusion", duration:"40 min", equipment:"None", impact:"Low", section:"fullbody", difficulty:"easy" },
+      { title:"45 Min Full Body Dumbbell Workout with Weights", channel:"HASfit", url:"https://hasfit.com/workouts/home/strength-weight-training/45-min-full-body-workout-with-dumbbells/", duration:"45 min", equipment:"Dumbbells", impact:"Moderate", section:"fullbody", difficulty:"medium" },
+      { title:"45 Min Full Body Dumbbell Workout", channel:"HASfit", url:"https://hasfit.com/workouts/home/strength-weight-training/45-min-full-body-dumbbell-workout/", duration:"45 min", equipment:"Dumbbells", impact:"Moderate", section:"fullbody", difficulty:"medium" },
+      { title:"30 Min Full Body – Intermediate/Advanced Pilates", channel:"Move With Nicole", url:"https://www.youtube.com/watch?v=zdw1V-IBekc", duration:"30 min", equipment:"None", impact:"Moderate", section:"fullbody", difficulty:"medium" },
+      { title:"40 Min Advanced Full Body HIIT Cardio + Strength", channel:"Sydney Cummings", url:"https://www.youtube.com/watch?v=LE67JPeJsUQ", duration:"40 min", equipment:"None", impact:"High", section:"fullbody", difficulty:"hard" },
+      { title:"40 Min Advanced Monster Monday HIIT (No Jumping)", channel:"Sydney Cummings", url:"https://www.youtube.com/watch?v=H07zm37E4v8", duration:"40 min", equipment:"None", impact:"Moderate–High (no jump)", section:"fullbody", difficulty:"hard" },
+      { title:"40 Min Full Body HIIT Workout (No Equipment)", channel:"OSX", url:"https://www.youtube.com/watch?v=Cc9Eelzd6wQ", duration:"40 min", equipment:"None", impact:"High", section:"fullbody", difficulty:"hard" },
+      { title:"40 Min Fierce Full Body HIIT (No Jumping/No Noise)", channel:"Sydney Cummings", url:"https://www.youtube.com/watch?v=91CzTz2-IJw", duration:"40 min", equipment:"None", impact:"Moderate (no jump)", section:"fullbody", difficulty:"medium" },
+      { title:"40 Min Cardio HIIT – Full Body, No Repeats", channel:"Sydney Cummings", url:"https://www.youtube.com/watch?v=5gzQEW-Ip_Y", duration:"40 min", equipment:"None", impact:"High", section:"fullbody", difficulty:"hard" },
+      { title:"40 Min Full Body Inferno HIIT (Series 20)", channel:"Sydney Cummings", url:"https://www.youtube.com/watch?v=aAssb5NnpE4", duration:"40 min", equipment:"Mat", impact:"High", section:"fullbody", difficulty:"hard" },
+      { title:"40 Min Intense Cardio HIIT – Burn 500 Calories", channel:"HASfit", url:"https://www.youtube.com/watch?v=zcpAyFLxI0c", duration:"40 min", equipment:"None", impact:"High", section:"fullbody", difficulty:"hard" },
+      { title:"40 Min Fat Burning HIIT Cardio – No Repeats", channel:"TIFFxDAN", url:"https://tiffxdan.com/hiit-no-equipment/", duration:"40 min", equipment:"None", impact:"High", section:"fullbody", difficulty:"hard" },
+      { title:"Killer 40 Minute HIIT Workout", channel:"Heather Robertson", url:"https://www.youtube.com/watch?v=oaY11JEmKEg", duration:"40 min", equipment:"None", impact:"High", section:"fullbody", difficulty:"hard" },
+      { title:"40 Min HIIT Cardio – Killer No Repeat", channel:"Sydney Cummings", url:"https://www.youtube.com/watch?v=sKyGW46goIo", duration:"40 min", equipment:"None", impact:"High", section:"fullbody", difficulty:"hard" },
+      { title:"45 Min Full Body Dumbbell Workout – Follow Along", channel:"Caroline Girvan", url:"https://www.youtube.com/watch?v=Q814vNr2iWI", duration:"45 min", equipment:"Dumbbells", impact:"Moderate–High", section:"fullbody", difficulty:"hard" },
+      { title:"45 Min Full Body Strength Dumbbell \"Scan\" Workout", channel:"Caroline Girvan", url:"https://www.youtube.com/watch?v=PACZjMcH2gs", duration:"45 min", equipment:"Dumbbells", impact:"Moderate–High", section:"fullbody", difficulty:"hard" },
+      { title:"45 Min Full Body Dumbbell Workout – Weight Training", channel:"HASfit", url:"https://www.youtube.com/watch?v=LE9D4GsNIdg", duration:"45 min", equipment:"Dumbbells", impact:"Moderate", section:"fullbody", difficulty:"medium" },
+      { title:"45 Min Full Body Strength (At Home Dumbbell)", channel:"Heather Robertson", url:"https://www.youtube.com/watch?v=Yuf052OBeeM", duration:"45 min", equipment:"Dumbbells", impact:"High", section:"fullbody", difficulty:"hard" },
+      { title:"45 Min Full Body Dumbbell Workout – Strength Training", channel:"Caroline Girvan", url:"https://www.youtube.com/watch?v=qs9wyBQrNYA", duration:"45 min", equipment:"Dumbbells", impact:"Moderate–High", section:"fullbody", difficulty:"hard" },
+      { title:"45 Minute Dumbbell Workouts (Playlist)", channel:"Caroline Girvan", url:"https://www.youtube.com/playlist?list=PLCnAsaBlMk23_JPYujoa9Am-PObz1wmTC", duration:"45 min each", equipment:"Dumbbells", impact:"Moderate–High", section:"fullbody", difficulty:"hard" },
+      { title:"30-Minute Bodyweight Tabata Workout", channel:"Nourish Move Love", url:"https://www.nourishmovelove.com/20-minute-bodyweight-tabata-workout/", duration:"30 min", equipment:"None", impact:"Moderate", section:"fullbody", difficulty:"hard" },
+      { title:"30-Minute Full Body Tabata Workout", channel:"Heather Robertson", url:"https://www.youtube.com/watch?v=sk3dKrEsEiw", duration:"30 min", equipment:"None", impact:"Moderate", section:"fullbody", difficulty:"medium" },
+      { title:"30 Min Savage Tabata HIIT – No Repeats", channel:"Growingannanas", url:"https://www.youtube.com/watch?v=w2c1ekXSCLU", duration:"30 min", equipment:"None", impact:"Moderate–High", section:"fullbody", difficulty:"hard" },
+      { title:"30 Min Live Tabata Workout – Full Body", channel:"Grow With Anna", url:"https://www.youtube.com/watch?v=W-1E4BA52U8", duration:"30 min", equipment:"None", impact:"Moderate", section:"fullbody", difficulty:"hard" },
+      { title:"30-Minute No-Equipment Full-Body HIIT with Tabata Intervals", channel:"Equinox (Raneir Pollard)", url:"https://www.youtube.com/watch?v=hVkz5N7PRu4", duration:"30 min", equipment:"None", impact:"High", section:"fullbody", difficulty:"hard" },
+      { title:"30 Min Full Body HIIT – Tabata Style, No Jumping", channel:"POPSUGAR Fitness", url:"https://www.youtube.com/watch?v=VL8K0XNwRk0", duration:"30 min", equipment:"None", impact:"Low–Moderate", section:"fullbody", difficulty:"medium" },
+      { title:"30 Min Killer HIIT Tabata Workout – No Repeat", channel:"Grow With Anna", url:"https://www.youtube.com/watch?v=C49DBaZhnhw", duration:"30 min", equipment:"None", impact:"Moderate–High", section:"fullbody", difficulty:"hard" },
+      { title:"30 Min Tabata HIIT Workout – No Equipment", channel:"Grow With Anna", url:"https://www.youtube.com/watch?v=fwADJcHxmow", duration:"30 min", equipment:"None", impact:"Moderate", section:"fullbody", difficulty:"hard" },
+      { title:"30 Min Tabata HIIT Workout (Challenging + Sweaty)", channel:"Grow With Anna", url:"https://www.youtube.com/watch?v=5mGeQKc97h0", duration:"30 min", equipment:"None", impact:"Moderate–High", section:"fullbody", difficulty:"hard" },
+      { title:"30 Min Killer Tabata HIIT – No Repeat", channel:"Grow With Anna", url:"https://www.youtube.com/watch?v=jiqe-9_BX_Y", duration:"30 min", equipment:"None", impact:"Moderate–High", section:"fullbody", difficulty:"hard" },
+      { title:"30-Minute Full Body Workout for Beginners (Simple & Effective)", channel:"Men's Fit Club", url:"https://www.mensfitclub.com/mens-fitness/30-minute-full-body-workout-for-beginners-simple-effective/", duration:"30 min", equipment:"None", impact:"Low", section:"fullbody", difficulty:"easy" },
+      { title:"30-Minute At-Home Full Body Workout", channel:"Nourish Move Love", url:"https://www.nourishmovelove.com/at-home-full-body-workout/", duration:"30 min", equipment:"None (dumbbells optional)", impact:"Low", section:"fullbody", difficulty:"medium" },
+      { title:"30 Minute Full Body Workout for Beginners (Playlist, Women 50+)", channel:"Fabulous50s", url:"https://www.youtube.com/playlist?list=PL32YrxpjeHf7SXev122PUWL2584BVmY-C", duration:"30 min each", equipment:"None", impact:"Low", section:"fullbody", difficulty:"easy" },
+      { title:"30-Minute Full Body Workout at Home", channel:"Nourish Move Love", url:"https://www.nourishmovelove.com/full-body-workout-at-home/", duration:"30 min", equipment:"None (dumbbells optional)", impact:"Low", section:"fullbody", difficulty:"medium" },
+      { title:"Slow & On the Floor – 30 Min Strength Workout", channel:"MadFit", url:"https://www.youtube.com/watch?v=Nlys2XC7J2M", duration:"30 min", equipment:"None", impact:"None", section:"fullbody", difficulty:"easy" },
+      { title:"30 Min Full Body Workout for Total Beginners – Standing, Low Impact", channel:"MadFit", url:"https://www.youtube.com/watch?v=3rdsdh5fVeY", duration:"30 min", equipment:"None", impact:"Low", section:"fullbody", difficulty:"easy" },
+      { title:"30 Min Full Body HIIT – No Jumping + No Equipment", channel:"MadFit", url:"https://www.youtube.com/watch?v=rI_6l992GrA", duration:"30 min", equipment:"None", impact:"Low", section:"fullbody", difficulty:"medium" },
+      { title:"30 Min Full Body Dumbbell Workout – Guided Audio Cues + Modifications", channel:"Heather Robertson", url:"https://www.youtube.com/watch?v=6Xr8EOWJrvY", duration:"30 min", equipment:"Light dumbbells (optional)", impact:"Low", section:"fullbody", difficulty:"easy" },
+      { title:"30 Min Fat Burning Home Workout for Beginners – Achievable, Low Impact", channel:"Team Body Project", url:"https://www.youtube.com/watch?v=gC_L9qAHVJ8", duration:"30 min", equipment:"None", impact:"Low", section:"fullbody", difficulty:"easy" },
+      { title:"Bodyweight Cardio Calorie Blaster – 30 Min Cardio Workout", channel:"Fitness Blender", url:"https://www.fitnessblender.com/videos/bodyweight-cardio-calorie-blaster-30-minute-cardio-workout-at-home", duration:"30 min", equipment:"None", impact:"Moderate", section:"fullbody", difficulty:"medium" },
+      { title:"30 Min Full Body Workout at Home – No Equipment", channel:"OSX", url:"https://www.youtube.com/watch?v=vUqFO_4tTmA", duration:"30 min", equipment:"None", impact:"Moderate", section:"fullbody", difficulty:"medium" },
+      { title:"30 Min Full Body Workout – No Equipment & No Repeat", channel:"(Full body channel)", url:"https://www.youtube.com/watch?v=q_vXOV1BmIQ", duration:"30 min", equipment:"None", impact:"Moderate", section:"fullbody", difficulty:"medium" },
+      { title:"30 Min Full Body Workout – No Equipment, No Repeat, At Home", channel:"(Full body channel)", url:"https://www.youtube.com/watch?v=dBP2uPQLFVw", duration:"30 min", equipment:"None", impact:"Moderate", section:"fullbody", difficulty:"hard" },
+      { title:"30 Minute At Home Abs & HIIT Cardio Workout – HIIT Happens", channel:"Fitness Blender", url:"https://www.fitnessblender.com/videos/30-minute-at-home-abs-and-hiit-cardio-workout-for-fat-loss-hiit-happens", duration:"31 min", equipment:"None", impact:"Moderate–High", section:"fullbody", difficulty:"hard" },
+      { title:"30 Minute At Home Abs and Cardio Workout", channel:"Fitness Blender", url:"https://www.fitnessblender.com/videos/30-minute-at-home-abs-and-cardio-workout-video", duration:"30 min", equipment:"None", impact:"Moderate", section:"fullbody", difficulty:"medium" },
+      { title:"Low Impact Cardio and Total Body Toning Workout", channel:"Fitness Blender", url:"https://www.fitnessblender.com/videos/low-impact-cardio-and-total-body-toning-workout", duration:"30 min", equipment:"None", impact:"Low", section:"fullbody", difficulty:"medium" },
+      { title:"Bodyweight HIIT Cardio Workout – Sweaty At Home Cardio HIIT", channel:"Fitness Blender", url:"https://www.fitnessblender.com/videos/bodyweight-hiit-cardio-workout-sweaty-at-home-cardio-hiit", duration:"30 min", equipment:"None", impact:"High", section:"fullbody", difficulty:"hard" },
+      { title:"Bodyweight Strength with HIIT Burnout Sets – Total Body Workout", channel:"Fitness Blender", url:"https://www.fitnessblender.com/videos/bodyweight-strength-with-hiit-burnout-sets-total-body-workout-in-30-minutes", duration:"30 min", equipment:"None", impact:"Moderate", section:"fullbody", difficulty:"hard" },
+      { title:"30 Minutes or Longer Workouts (Playlist)", channel:"Fitness Blender", url:"https://www.youtube.com/playlist?list=PL5lPziO_t_VgzkYXnOH3yCqFf8nGdMthk", duration:"30+ min each", equipment:"None", impact:"Varies", section:"fullbody", difficulty:"easy" },
+      { title:"At-Home Resistance Band Workout (Full Body)", channel:"Nourish Move Love", url:"https://www.nourishmovelove.com/resistance-band-workout/", duration:"30 min", equipment:"Mini loop band", impact:"Low", section:"strength", difficulty:"medium" },
+      { title:"30 Min Full Body Resistance Band – Build Muscle", channel:"Gravity Fitness", url:"https://www.youtube.com/watch?v=8T1imtGfiLg", duration:"30 min", equipment:"Long resistance band", impact:"Low", section:"strength", difficulty:"medium" },
+      { title:"30 Min Resistance Band Strength (With Modifications)", channel:"Caroline Girvan", url:"https://www.youtube.com/watch?v=55EfZ7RDhf8", duration:"30 min", equipment:"Resistance band", impact:"Low", section:"strength", difficulty:"hard" },
+      { title:"30 Min Full Body Resistance Band Workout", channel:"Juice & Toya", url:"https://www.youtube.com/watch?v=YLK2cVkhRKM", duration:"30 min", equipment:"Resistance band", impact:"Low", section:"strength", difficulty:"medium" },
+      { title:"30-Min Full Body Band Workout (Travel Workout)", channel:"Caroline Girvan", url:"https://www.youtube.com/watch?v=vo3tOhYpBRU", duration:"30 min", equipment:"Long band", impact:"Low", section:"strength", difficulty:"hard" },
+      { title:"30 Min Full Body Resistance Band – Beginner Friendly", channel:"Gravity Fitness", url:"https://www.youtube.com/watch?v=zCZ0o3gNqSo", duration:"30 min", equipment:"Long bands + mini band", impact:"Low", section:"strength", difficulty:"medium" },
+      { title:"30 Min Full Body Resistance Band – Build + Burn", channel:"Everyday Warrior (KayKay)", url:"https://www.youtube.com/watch?v=M0nREQKiAdo", duration:"30 min", equipment:"Resistance band", impact:"Low–Moderate", section:"strength", difficulty:"hard" },
+      { title:"30 Min Resistance Band Workout – Beginners thru Intermediate", channel:"HASfit", url:"https://www.youtube.com/watch?v=2MmUHwfbOAQ", duration:"30 min", equipment:"Resistance band", impact:"Low", section:"strength", difficulty:"medium" },
+      { title:"30-Minute Full-Body Resistance Band Workout", channel:"(embedded YouTube)", url:"https://thumpermassager.com/blogs/blog/30-minute-full-body-resistance-band-workout", duration:"30 min", equipment:"Long resistance band", impact:"Low", section:"strength", difficulty:"medium" },
+      { title:"30 Min Calisthenics Upper Body Workout at Home", channel:"Calisthenic Movement", url:"https://www.youtube.com/watch?v=SEqetqEW5uU", duration:"30 min", equipment:"None", impact:"Low", section:"strength", difficulty:"medium" },
+      { title:"30 Min Full Body Calisthenics Workout at Home", channel:"Calisthenic Movement", url:"https://www.youtube.com/watch?v=fWptOzJI3Wc", duration:"30 min", equipment:"None", impact:"Low", section:"strength", difficulty:"medium" },
+      { title:"Beginner Friendly Calisthenics Follow Along – Full Body", channel:"Calisthenic Movement", url:"https://www.youtube.com/watch?v=gjVCqvKZC3k", duration:"30 min", equipment:"None", impact:"Low", section:"strength", difficulty:"medium" },
+      { title:"30-Minute Full Body Calisthenics for Beginners", channel:"Men's Fit Club", url:"https://www.mensfitclub.com/mens-fitness/30-minute-full-body-calisthenics-for-beginners/", duration:"30 min", equipment:"None", impact:"Low", section:"strength", difficulty:"easy" },
+      { title:"30-Minute Full-Body Calisthenics Workout (Beginners)", channel:"Calisthenics Association", url:"https://calisthenicsassociation.org/blog/30-minute-full-body-calisthenics-workout-beginners", duration:"30 min", equipment:"None (sturdy surface for rows)", impact:"Low", section:"strength", difficulty:"easy" },
+      { title:"30-Minute No Equipment Arm Workout", channel:"Nourish Move Love", url:"https://www.nourishmovelove.com/zero-30-no-equipment-arm-workout/", duration:"30 min", equipment:"None", impact:"Low", section:"strength", difficulty:"medium" },
+      { title:"30 Min No Equipment Upper Body Workout", channel:"HASfit", url:"https://hasfit.com/workouts/home/body-weight/no-equipment-upper-body-workout/", duration:"30 min", equipment:"None (towel optional)", impact:"Low", section:"strength", difficulty:"medium" },
+      { title:"30 Min Upper Body Workout at Home – Build Muscle", channel:"OSX", url:"https://www.youtube.com/watch?v=hsswpCzN6Ao", duration:"30 min", equipment:"None", impact:"Low", section:"strength", difficulty:"medium" },
+      { title:"Upper Body & Core – 30 Min No Equipment", channel:"CrockFit", url:"https://www.youtube.com/watch?v=EDQMGR93oxE", duration:"30 min", equipment:"None", impact:"Low", section:"strength", difficulty:"medium" },
+      { title:"30 Min Toned Upper Body Workout – No Repeat", channel:"Growingannanas", url:"https://www.youtube.com/watch?v=2PdsSfxD_1A", duration:"30 min", equipment:"None", impact:"Low", section:"strength", difficulty:"hard" },
+      { title:"30 Min Full Upper Body Workout – No Repeat", channel:"Growingannanas", url:"https://www.youtube.com/watch?v=WGA_ctAMkMk", duration:"30 min", equipment:"None", impact:"Low", section:"strength", difficulty:"hard" },
+      { title:"Beginner Series – 30 Min No Equipment Upper Body", channel:"MadFit", url:"https://www.youtube.com/watch?v=mdSoSwbqKpY", duration:"30 min", equipment:"None", impact:"Low", section:"strength", difficulty:"easy" },
+      { title:"30-Minute HIIT Leg Workout", channel:"Nourish Move Love", url:"https://www.nourishmovelove.com/zero-30-hiit-leg-workout/", duration:"30 min", equipment:"None", impact:"Moderate", section:"strength", difficulty:"hard" },
+      { title:"30-Minute Bodyweight Leg Workout", channel:"Nourish Move Love", url:"https://www.nourishmovelove.com/zero-30-bodyweight-leg-workout/", duration:"30 min", equipment:"None", impact:"Low–Moderate", section:"strength", difficulty:"medium" },
+      { title:"30 Min Legs & Glutes Workout – Lower Body HIIT", channel:"Growingannanas", url:"https://www.youtube.com/watch?v=waWmh4oAI0o", duration:"30 min", equipment:"None", impact:"Moderate", section:"strength", difficulty:"hard" },
+      { title:"30 Min Lower Body Workout – Strong Legs & Glutes", channel:"OSX", url:"https://www.youtube.com/watch?v=rOg2sSLDfVs", duration:"30 min", equipment:"None", impact:"Low–Moderate", section:"strength", difficulty:"medium" },
+      { title:"30 Min Killer Lower Body HIIT – Legs and Glutes", channel:"Grow With Anna", url:"https://www.youtube.com/watch?v=m2L5SMWDRV8", duration:"30 min", equipment:"None", impact:"Moderate", section:"strength", difficulty:"hard" },
+      { title:"30 Min Legs & Glutes – No Equipment Lower Body", channel:"OSX", url:"https://www.youtube.com/watch?v=T8OSi6V2GPk", duration:"30 min", equipment:"None", impact:"Low–Moderate", section:"strength", difficulty:"medium" },
+      { title:"30 Min Killer Leg Day – Lower Body Workout", channel:"Grow With Anna", url:"https://www.youtube.com/watch?v=gcIqwTuaP4o", duration:"30 min", equipment:"None", impact:"Moderate", section:"strength", difficulty:"hard" },
+      { title:"30-Minute Glute Workout – Floor Only, Beginner Friendly", channel:"(Home Fitness)", url:"https://www.youtube.com/watch?v=23YRR70vYpk", duration:"30 min", equipment:"None", impact:"None (floor-based)", section:"strength", difficulty:"easy" },
+      { title:"30 Min Abs & Booty – No Equipment, No Repeat", channel:"MadFit", url:"https://www.youtube.com/watch?v=pKhKqYBP7qQ", duration:"30 min", equipment:"None", impact:"Low", section:"strength", difficulty:"medium" },
+      { title:"Ultimate Abs and Glutes Workout – No Equipment", channel:"Caroline Girvan", url:"https://www.youtube.com/watch?v=b2ApK-D_RKc", duration:"30 min", equipment:"None", impact:"Low", section:"strength", difficulty:"hard" },
+      { title:"30 Min Abs & Booty – No Equipment, Tone & Build", channel:"MadFit", url:"https://www.youtube.com/watch?v=8DGcqYVxJLQ", duration:"30 min", equipment:"None", impact:"Low", section:"strength", difficulty:"medium" },
+      { title:"30 Min Abs, Core + Glutes – Intermediate/Advanced", channel:"Grow With Anna", url:"https://www.youtube.com/watch?v=37pvJ6MWJ9w", duration:"30 min", equipment:"None", impact:"Low", section:"strength", difficulty:"hard" },
+      { title:"30 Min Legs + Booty Burn – No Talking, Grow Your Booty", channel:"Grow With Anna", url:"https://www.youtube.com/watch?v=_ld5pEGIP6A", duration:"30 min", equipment:"None", impact:"Low–Moderate", section:"strength", difficulty:"hard" },
+      { title:"30-Minute Barre Workout (Full Body, No Equipment)", channel:"Nourish Move Love", url:"https://www.nourishmovelove.com/30-minute-barre-workout/", duration:"30 min", equipment:"None (chair optional)", impact:"Low", section:"pilatesbarre", difficulty:"medium" },
+      { title:"30-Minute Cardio Barre Class (Barre Burn)", channel:"Nourish Move Love", url:"https://www.nourishmovelove.com/30-minute-cardio-barre/", duration:"30 min", equipment:"None", impact:"Low–Moderate", section:"pilatesbarre", difficulty:"medium" },
+      { title:"30 Minute At-Home Barre Workout", channel:"The Fitnessista", url:"https://fitnessista.com/30-minute-at-home-barre-workout-video/", duration:"30 min", equipment:"None", impact:"Low", section:"pilatesbarre", difficulty:"medium" },
+      { title:"30 Min Full Body No Equipment Barre Workout", channel:"POPSUGAR Fitness", url:"https://www.youtube.com/watch?v=qANmUV7KT7I", duration:"30 min", equipment:"None", impact:"Low", section:"pilatesbarre", difficulty:"medium" },
+      { title:"30-Min No-Equipment Barre with Marnie Alton", channel:"M/Body", url:"https://www.youtube.com/watch?v=bafhVmBXk5M", duration:"30 min", equipment:"None", impact:"Low", section:"pilatesbarre", difficulty:"medium" },
+      { title:"Bodyweight Barre Workout – Full Body, No Equipment", channel:"blogilates", url:"https://www.youtube.com/watch?v=3lXiGW6VqUo", duration:"30 min", equipment:"None", impact:"Low", section:"pilatesbarre", difficulty:"medium" },
+      { title:"30 Min Barre Workout – Dancer Sculpt", channel:"Move With Nicole", url:"https://www.youtube.com/watch?v=Y_e85p7MuEw", duration:"30 min", equipment:"None (chair optional)", impact:"Low", section:"pilatesbarre", difficulty:"medium" },
+      { title:"30-Min Full Body Sculpting Barre Workout", channel:"Rachel Gulotta Fitness", url:"https://www.youtube.com/watch?v=TqLjMvttFk0", duration:"30 min", equipment:"None", impact:"Low", section:"pilatesbarre", difficulty:"medium" },
+      { title:"30-Minute Cardio Barre Class (No Equipment Barre Burn)", channel:"Nourish Move Love", url:"https://www.youtube.com/watch?v=wLpBX5CL6dI", duration:"30 min", equipment:"None", impact:"Low–Moderate", section:"pilatesbarre", difficulty:"medium" },
+      { title:"30 Min Full Body Pilates Workout for Beginners", channel:"Move With Nicole", url:"https://www.youtube.com/watch?v=nnt34RN74Rs", duration:"30 min", equipment:"None", impact:"Low", section:"pilatesbarre", difficulty:"easy" },
+      { title:"30 Min Full Body Pilates Workout", channel:"Isabelle Pilates", url:"https://www.youtube.com/watch?v=Zw7zhaBpSPU", duration:"30 min", equipment:"None", impact:"Low", section:"pilatesbarre", difficulty:"medium" },
+      { title:"30-Minute Pilates Workout (7 Exercises)", channel:"Nourish Move Love", url:"https://www.nourishmovelove.com/30-minute-pilates-workout/", duration:"30 min", equipment:"None", impact:"Low", section:"pilatesbarre", difficulty:"medium" },
+      { title:"Complete Classical Pilates Mat Routine – Full Body Strength", channel:"Exercise180 (Annalicia Niemela)", url:"https://exercise180.substack.com/p/complete-classical-pilates-mat-routine", duration:"40 min", equipment:"None", impact:"Low", section:"pilatesbarre", difficulty:"medium" },
+      { title:"30-Minute Barre Blend Workout", channel:"Nourish Move Love", url:"https://www.nourishmovelove.com/30-minute-barre-blend-workout/", duration:"30 min", equipment:"None (optional light dumbbells)", impact:"Low", section:"pilatesbarre", difficulty:"medium" },
+      { title:"30-Minute Full-Body Power Barre Workout", channel:"Nourish Move Love", url:"https://www.nourishmovelove.com/barre-fitness-workout-video/", duration:"30 min", equipment:"None (chair for balance)", impact:"Low", section:"pilatesbarre", difficulty:"medium" },
+      { title:"Beginner Barre Workout – No Experience Needed", channel:"BarreWorkout.com", url:"https://barreworkout.com/free-workouts/beginner/", duration:"20–30 min each", equipment:"None", impact:"Low", section:"pilatesbarre", difficulty:"easy" },
+      { title:"Wall Pilates Challenge – Full Body Workout", channel:"Move With Nicole", url:"https://www.youtube.com/watch?v=sicknkj8EMc", duration:"30 min", equipment:"Wall", impact:"None", section:"pilatesbarre", difficulty:"medium" },
+      { title:"Wall Pilates for Beginners & Seniors – Full Body", channel:"SeniorShape", url:"https://www.youtube.com/watch?v=o2C8U1cNPJs", duration:"30 min", equipment:"Wall", impact:"None", section:"pilatesbarre", difficulty:"easy" },
+      { title:"30 Min Wall Pilates – Full Body, No Equipment", channel:"Move With Nicole", url:"https://www.youtube.com/watch?v=CQcIFJDSQCw", duration:"30 min", equipment:"Wall", impact:"None", section:"pilatesbarre", difficulty:"medium" },
+      { title:"30 Min Full Body Wall Pilates Workout – No Jumping, No Repeat", channel:"Sydney Cummings", url:"https://www.youtube.com/watch?v=G5pm72hVbWw", duration:"30 min", equipment:"Wall", impact:"Low", section:"pilatesbarre", difficulty:"medium" },
+      { title:"30 Min Fat Burning Wall Pilates – Full Body, Beginner Friendly", channel:"Grow With Anna", url:"https://www.youtube.com/watch?v=56nOHV87zec", duration:"30 min", equipment:"Wall", impact:"Low", section:"pilatesbarre", difficulty:"medium" },
+      { title:"30 Min Full Body Workout – At-Home Pilates", channel:"Move With Nicole", url:"https://www.youtube.com/watch?v=C2HX2pNbUCM", duration:"30 min", equipment:"None", impact:"Low", section:"pilatesbarre", difficulty:"medium" },
+      { title:"30-Minute Pilates At Home Workout (Barre Fusion)", channel:"Nourish Move Love", url:"https://www.nourishmovelove.com/pilates-at-home/", duration:"30 min", equipment:"None (dumbbells optional)", impact:"Low", section:"pilatesbarre", difficulty:"medium" },
+      { title:"30-Minute Barre Pilates HIIT Class (Full Body Fusion)", channel:"Nourish Move Love", url:"https://www.nourishmovelove.com/barre-pilates-hiit/", duration:"30 min", equipment:"None (dumbbells optional)", impact:"Low–Moderate", section:"pilatesbarre", difficulty:"hard" },
+      { title:"Pilates Barre Workout – Standing Pilates & Ballet Inspired", channel:"Move With Nicole", url:"https://www.youtube.com/watch?v=4C22HnTmEK0", duration:"30 min", equipment:"None", impact:"Low", section:"pilatesbarre", difficulty:"medium" },
+      { title:"30 Min Barre & Pilates Workout – Cardio & Toning Fusion", channel:"Barre With Me", url:"https://www.youtube.com/watch?v=BWXNkVPZHt8", duration:"30 min", equipment:"None", impact:"Low–Moderate", section:"pilatesbarre", difficulty:"medium" },
+      { title:"30 Minute Barre Pilates Floor Workout", channel:"Barre With Me", url:"https://www.youtube.com/watch?v=JVjXjTIUK2E", duration:"30 min", equipment:"None", impact:"Low", section:"pilatesbarre", difficulty:"medium" },
+      { title:"30 Min Blend Barre/Yoga/Pilates Workout – Beginner Friendly", channel:"With Amy", url:"https://www.youtube.com/watch?v=Yo3gm_Nflro", duration:"30 min", equipment:"Chair or wall for balance", impact:"Low", section:"pilatesbarre", difficulty:"medium" },
+      { title:"Free 30-Minute Barre & Pilates Fusion Workout – Xtend Barre", channel:"BODi (Andrea Rogers)", url:"https://www.youtube.com/watch?v=P7HRwBzAqPI", duration:"30 min", equipment:"None", impact:"Low", section:"pilatesbarre", difficulty:"medium" },
+      { title:"30-Minute Power Yoga Workout", channel:"Nourish Move Love", url:"https://www.nourishmovelove.com/zero-30-minute-yoga/", duration:"30 min", equipment:"None", impact:"Low", section:"yogastretch", difficulty:"medium" },
+      { title:"30-Minute Intense Yoga Workout", channel:"Nourish Move Love", url:"https://www.nourishmovelove.com/zero-30-yoga-workout/", duration:"35 min", equipment:"None", impact:"Low", section:"yogastretch", difficulty:"hard" },
+      { title:"30 Min Full Body Yoga Flow – All Levels Vinyasa", channel:"Yoga with Kassandra", url:"https://www.youtube.com/watch?v=aYDt3PW7O8E", duration:"30 min", equipment:"None", impact:"Low", section:"yogastretch", difficulty:"medium" },
+      { title:"Live Morning Yoga Flow – 30 Min All Levels", channel:"Yoga with Kassandra", url:"https://www.youtube.com/watch?v=_DW037LgxL4", duration:"30 min", equipment:"None", impact:"Low", section:"yogastretch", difficulty:"medium" },
+      { title:"30 Min Morning Yoga Flow – Full Body for All Levels", channel:"Charlie Follows", url:"https://www.youtube.com/watch?v=RVv9GkzX7iM", duration:"30 min", equipment:"None", impact:"Low", section:"yogastretch", difficulty:"medium" },
+      { title:"30 Min Morning Yoga Flow – Stretch, Breathe & Set Intention", channel:"Yoga with Kassandra", url:"https://www.youtube.com/watch?v=RIgB-LpWBKE", duration:"30 min", equipment:"None", impact:"Low", section:"yogastretch", difficulty:"easy" },
+      { title:"30 Min Morning Yoga Flow – Full Body for All Levels (2)", channel:"Charlie Follows", url:"https://www.youtube.com/watch?v=1vj2nDu2vM0", duration:"30 min", equipment:"None", impact:"Low", section:"yogastretch", difficulty:"medium" },
+      { title:"30 Min Energising Morning Yoga Flow – Full Body", channel:"Charlie Follows", url:"https://www.youtube.com/watch?v=w98q46fhiO4", duration:"30 min", equipment:"None", impact:"Low", section:"yogastretch", difficulty:"medium" },
+      { title:"30 Min Daily Yoga Flow – Stretch & Feel Good", channel:"Yoga with Kassandra", url:"https://www.youtube.com/watch?v=2eC7TlC2NLs", duration:"30 min", equipment:"None", impact:"Low", section:"yogastretch", difficulty:"easy" },
+      { title:"30 Min Flexibility + Stretching + Mobility Routine – Full Body", channel:"MadFit", url:"https://www.youtube.com/watch?v=REL4y5a_xF8", duration:"30 min", equipment:"None", impact:"None", section:"yogastretch", difficulty:"easy" },
+      { title:"30 Min Mobility Workout to Follow Along (Not Just Stretching)", channel:"Bodyweight Warrior", url:"https://www.youtube.com/watch?v=9v5V8mJ1B6o", duration:"30 min", equipment:"None", impact:"Low", section:"yogastretch", difficulty:"medium" },
+      { title:"30 Min Full Body Flexibility + Stretching Routine – Relaxation", channel:"MadFit", url:"https://www.youtube.com/watch?v=F1PpwZPD1zc", duration:"30 min", equipment:"None", impact:"None", section:"yogastretch", difficulty:"easy" },
+      { title:"30 Min Flexibility + Stretching Routine – Full Body Relaxation", channel:"MadFit", url:"https://www.youtube.com/watch?v=WnSr8w4QEWo", duration:"30 min", equipment:"None", impact:"None", section:"yogastretch", difficulty:"easy" },
+      { title:"30 Minute Full Body Flexibility Routine V4", channel:"Bodyweight Warrior", url:"https://www.youtube.com/watch?v=CmCysOVh5gA", duration:"30 min", equipment:"None", impact:"None", section:"yogastretch", difficulty:"medium" },
+      { title:"Full Body Stretch – Gentle Routine for Flexibility & Relaxation", channel:"MadFit", url:"https://www.youtube.com/watch?v=CY6QP4ofwx4", duration:"30 min", equipment:"None", impact:"None", section:"yogastretch", difficulty:"easy" },
+      { title:"30 Min Dynamic Lower Body Flexibility Routine", channel:"Bodyweight Warrior", url:"https://www.youtube.com/watch?v=Wa_FD6EsBSg", duration:"30 min", equipment:"None", impact:"Low", section:"yogastretch", difficulty:"medium" },
+      { title:"Strength & Flexibility Workout from Home – 30 Min Follow-Along", channel:"MadFit", url:"https://www.youtube.com/watch?v=7zMr3VM5n20", duration:"30 min", equipment:"None", impact:"Low", section:"yogastretch", difficulty:"medium" },
+      { title:"30-Minute Yoga Workout – Power Yoga", channel:"Nourish Move Love", url:"https://www.nourishmovelove.com/zero-30-minute-yoga/", duration:"30 min", equipment:"None (mat recommended)", impact:"Low", section:"yogastretch", difficulty:"medium" },
+      { title:"Yoga Vinyasa Strong Flow 2 – Flexibility, Strength, Balance, Advanced", channel:"Yoga Fit", url:"https://www.youtube.com/watch?v=00IdR3O-XF8", duration:"30 min", equipment:"None", impact:"Low", section:"yogastretch", difficulty:"hard" },
+      { title:"Advanced Power Yoga for Incredible Strength", channel:"Breathe and Flow Yoga", url:"https://www.youtube.com/watch?v=OHNNfNHxapc", duration:"30 min", equipment:"None", impact:"Low", section:"yogastretch", difficulty:"hard" },
+      { title:"30 Minute Power Vinyasa – No Repeats, Full Body Yoga Flow", channel:"(Yoga channel)", url:"https://m.youtube.com/watch?v=k6yEIdt_kZE", duration:"30 min", equipment:"None", impact:"Low", section:"yogastretch", difficulty:"hard" },
+      { title:"30 Minute Power Yoga Flow – Consistent Practice Required", channel:"(Yoga channel)", url:"https://www.youtube.com/watch?v=NoBbzv7kvRs", duration:"30 min", equipment:"None", impact:"Low", section:"yogastretch", difficulty:"hard" },
+      { title:"30-Minute Energizing Power Vinyasa Flow with Briohny Smyth", channel:"Alo Moves", url:"https://www.youtube.com/watch?v=A4ViwsLKoSY", duration:"30 min", equipment:"None", impact:"Low", section:"yogastretch", difficulty:"hard" },
+      { title:"Advanced 30 Minute Strong Fluidity Yoga Practice", channel:"Yoga with Flo", url:"https://www.youtube.com/watch?v=JaCW9K_L_-8", duration:"30 min", equipment:"None", impact:"Low", section:"yogastretch", difficulty:"hard" },
+      { title:"30 Min Yoga Flow – Intermediate to Advanced Full Body", channel:"(Yoga channel)", url:"https://m.youtube.com/live/mH2lSev5hGk", duration:"30 min", equipment:"None", impact:"Low", section:"yogastretch", difficulty:"hard" },
+      { title:"30 Minute Shadow Boxing HIIT Workout – No Equipment", channel:"Morley", url:"https://www.youtube.com/watch?v=zwaco-aQ-Hw", duration:"30 min", equipment:"None", impact:"Moderate", section:"boxingstep", difficulty:"hard" },
+      { title:"30 Minute Shadow Boxing Workout at Home", channel:"ShadowBoxing Academy", url:"https://www.youtube.com/watch?v=t0o8igB5qf8", duration:"30 min", equipment:"None", impact:"Moderate", section:"boxingstep", difficulty:"medium" },
+      { title:"Follow Along 30 Minute Shadow Boxing Workout", channel:"Nate Bower Fitness", url:"https://www.youtube.com/watch?v=HLPU9Qk7ZVw", duration:"30 min", equipment:"None", impact:"Moderate", section:"boxingstep", difficulty:"medium" },
+      { title:"30-Minute At-Home Shadowboxing Workout", channel:"Litesport (Christina Marks)", url:"https://litesport.com/blog/the-ring/30-minute-shadowboxing-workout-no-equipment", duration:"30 min", equipment:"None (water bottle optional)", impact:"Moderate", section:"boxingstep", difficulty:"medium" },
+      { title:"Easy Beginner Shadow Boxing Workout – 30 Min", channel:"Nate Bower Fitness", url:"https://www.youtube.com/watch?v=Q1Piq_vMh5g", duration:"30 min", equipment:"None", impact:"Low–Moderate", section:"boxingstep", difficulty:"easy" },
+      { title:"Ultimate 30 Minute Shadow Boxing Workout for Beginners", channel:"ShadowBoxing Academy", url:"https://www.youtube.com/watch?v=msk8oWv8k4w", duration:"30 min", equipment:"None", impact:"Moderate", section:"boxingstep", difficulty:"medium" },
+      { title:"30 Minutes Full Boxing Workout – Follow Along", channel:"ShadowBoxing Academy", url:"https://www.youtube.com/watch?v=r1wlUCl1sio", duration:"30 min", equipment:"None", impact:"Moderate", section:"boxingstep", difficulty:"hard" },
+      { title:"Easy 30 Minute Shadow Boxing Workout – Beginner Version", channel:"Nate Bower Fitness", url:"https://www.youtube.com/watch?v=fZLv3GCpf14", duration:"30 min", equipment:"None", impact:"Low–Moderate", section:"boxingstep", difficulty:"easy" },
+      { title:"30 Minute Shadow Boxing Workout to Get You Fit", channel:"Nate Bower Fitness", url:"https://www.youtube.com/watch?v=12rCpL7yENg", duration:"30 min", equipment:"None", impact:"Moderate", section:"boxingstep", difficulty:"medium" },
+      { title:"30-Minute Kickboxing Workout – No Equipment Required", channel:"FightCamp (Shanie \"Smash\" Rusth)", url:"https://www.aol.com/sweat-30-minute-kickboxing-workout-145100706.html", duration:"30 min", equipment:"None", impact:"Moderate", section:"boxingstep", difficulty:"medium" },
+      { title:"30-Minute Step & Strength – No-Repeat Stepper Workout with Weights", channel:"(Step channel)", url:"https://www.youtube.com/watch?v=uMZ6Pso0VbY", duration:"30 min", equipment:"Step + light weights (optional)", impact:"Moderate", section:"boxingstep", difficulty:"medium" },
+      { title:"30 Minute Step Aerobics – Intermediate Class, 133 BPM", channel:"(Step channel)", url:"https://www.youtube.com/watch?v=AkBLAdsuJ-E", duration:"30 min", equipment:"Step", impact:"Moderate", section:"boxingstep", difficulty:"medium" },
+      { title:"Step Aerobics Workout – 30 Min Intermediate, Less Breakdown", channel:"(Step channel)", url:"https://www.youtube.com/watch?v=Ol12XXay2I4", duration:"30 min", equipment:"Step", impact:"Moderate", section:"boxingstep", difficulty:"medium" },
+      { title:"30 Minute Basic to Intermediate Step Aerobics Workout", channel:"(Step channel)", url:"https://www.youtube.com/watch?v=lXf8ECz9b5s", duration:"30 min", equipment:"Step", impact:"Moderate", section:"boxingstep", difficulty:"medium" },
+      { title:"Basic and Not Boring Step Aerobics Workout – 30 Minutes", channel:"(Step channel)", url:"https://www.youtube.com/watch?v=7KBUwXq7EIg", duration:"30 min", equipment:"Step", impact:"Low–Moderate", section:"boxingstep", difficulty:"easy" },
+      { title:"30 Minute Basic Step Workout – Easy to Follow", channel:"(Step channel)", url:"https://www.youtube.com/watch?v=rNT3Xt_hPW4", duration:"30 min", equipment:"Step", impact:"Low–Moderate", section:"boxingstep", difficulty:"easy" },
+      { title:"30 Minute Easy Basic Step Aerobics for Beginners, Seniors", channel:"(Step channel)", url:"https://m.youtube.com/watch?v=Tjt5DyUX_4o", duration:"30 min", equipment:"Step", impact:"Low", section:"boxingstep", difficulty:"easy" },
+      { title:"30 Min Abs & Core – No Equipment, No Repeat", channel:"Sydney Cummings", url:"https://www.youtube.com/watch?v=7ykG3URaYd8", duration:"30 min", equipment:"None", impact:"Low", section:"core", difficulty:"medium" },
+      { title:"30 Min Core Workout – No Equipment, Follow Along", channel:"MadFit", url:"https://www.youtube.com/watch?v=n8UU10ho8Ps", duration:"30 min", equipment:"None", impact:"Low", section:"core", difficulty:"medium" },
+      { title:"Intense 30 Min Abs Workout – No Repeats", channel:"Caroline Girvan", url:"https://www.youtube.com/watch?v=u9vGi4OJi7Q", duration:"30 min", equipment:"None", impact:"Low", section:"core", difficulty:"hard" },
+      { title:"30 Min Core – Ab and Back Home Workout", channel:"Chloe Ting", url:"https://www.youtube.com/watch?v=SriiwAGkVmc", duration:"30 min", equipment:"None", impact:"Low", section:"core", difficulty:"medium" },
+      { title:"30 Min Slow & Intense Abs", channel:"MadFit", url:"https://www.youtube.com/watch?v=xYoKWuCbHnw", duration:"30 min", equipment:"None", impact:"Low", section:"core", difficulty:"hard" },
+      { title:"30 Min Killer Abs + Core", channel:"GainsByBrains", url:"https://www.youtube.com/watch?v=WYsnSvTqaKE", duration:"30 min", equipment:"None", impact:"Low", section:"core", difficulty:"hard" },
+      { title:"30 Min Abs Workout at Home – No Equipment, No Repeat", channel:"Caroline Girvan", url:"https://tomsguide.com/wellness/fitness/forget-the-gym-i-tried-this-30-minute-equipment-free-core-workout-to-blast-my-abs-and-obliques", duration:"30 min", equipment:"None", impact:"Low", section:"core", difficulty:"hard" },
+      { title:"30-Minute Dumbbell Core Workout (Standing Abs, Mat Abs, Power Abs)", channel:"Nourish Move Love", url:"https://www.nourishmovelove.com/30-minute-core-home-workout/", duration:"30 min", equipment:"Dumbbells (optional)", impact:"Low", section:"core", difficulty:"medium" },
+      { title:"Complete 30 Min Abs Workout – Follow Along", channel:"Chris Heria (THENX)", url:"https://www.youtube.com/watch?v=P1mInEK7BEU", duration:"30 min", equipment:"None", impact:"Low", section:"core", difficulty:"hard" },
+      { title:"Chair Cardio Workout for Seniors & Beginners", channel:"SeniorShape", url:"https://www.youtube.com/watch?v=yiEX9NPE354", duration:"30 min", equipment:"Chair", impact:"None (seated)", section:"chair", difficulty:"easy" },
+      { title:"Low Impact Exercises for Seniors & Beginners", channel:"Improved Health for Seniors (Jules)", url:"https://www.improvedhealthforseniors.com/gentle-all-in-one", duration:"30 min", equipment:"Chair (optional)", impact:"Low", section:"chair", difficulty:"easy" },
+      { title:"30-Min Full Body Chair Workout for Seniors (Intermediate)", channel:"SeniorShape", url:"https://www.youtube.com/live/JAO_5iiMkng", duration:"30 min", equipment:"Chair", impact:"None (seated)", section:"chair", difficulty:"medium" },
+      { title:"30-Min Seated Chair Exercises for Seniors", channel:"SeniorShape", url:"https://www.youtube.com/watch?v=7TMyScomzic", duration:"30 min", equipment:"Chair", impact:"None (seated)", section:"chair", difficulty:"easy" },
+      { title:"30 Min Senior Exercises at Home – Balance", channel:"HASfit", url:"https://www.youtube.com/watch?v=nJNW-ChhTvg", duration:"30 min", equipment:"Chair (optional)", impact:"Low", section:"chair", difficulty:"easy" },
+      { title:"Chair Exercises for Seniors – 30 Min Whole Body", channel:"More Life Health (Mike, PT)", url:"https://morelifehealth.com/articles/chair-exercises-for-seniors", duration:"30 min", equipment:"Chair", impact:"None (seated)", section:"chair", difficulty:"easy" },
+      { title:"Chair Exercises Playlist – Seniors & Low Impact", channel:"Various", url:"https://www.youtube.com/playlist?list=PLMcIqWDasMobV8zDX3o9jlzedYbCEAStu", duration:"30 min each", equipment:"Chair", impact:"None (seated)", section:"chair", difficulty:"easy" },
+      { title:"Fall Prevention – 30-Minute Follow-Along Workout", channel:"Hospital for Special Surgery (HSS)", url:"https://www.youtube.com/watch?v=O8896ImkgyI", duration:"30 min", equipment:"Chair (optional)", impact:"None", section:"chair", difficulty:"easy" },
+      { title:"Balance Exercises for Seniors – Fall Prevention", channel:"Grow Young Fitness", url:"https://www.youtube.com/watch?v=z-tUHuNPStw", duration:"30 min", equipment:"Chair (optional)", impact:"None", section:"chair", difficulty:"easy" },
+      { title:"10 Exercises for Balance and Fall Prevention – Full Follow Along", channel:"(Senior fitness channel)", url:"https://www.youtube.com/watch?v=uJZk7jafw-o", duration:"30 min", equipment:"Chair (optional)", impact:"None", section:"chair", difficulty:"easy" },
+      { title:"Balance Exercises for Seniors – Prevent Falls (Playlist)", channel:"(Senior fitness channel)", url:"https://www.youtube.com/playlist?list=PLBx06e-L9mh7V5o_uPB8vaEf0Et9_ZH6o", duration:"Varies", equipment:"Chair (optional)", impact:"None", section:"chair", difficulty:"easy" },
+      { title:"Whole Body Chair Exercise for Seniors – 30 Minutes", channel:"More Life Health (Mike, PT)", url:"https://www.youtube.com/watch?v=91ABO4utqkA", duration:"30 min", equipment:"Chair", impact:"None (seated)", section:"chair", difficulty:"easy" },
+      { title:"30 Min Senior Workout Routines – Standing & Seated Chair Exercises", channel:"Behavioral Health Services North", url:"https://bhsn.org/30-min-senior-workout-routines-standing-seated-chair-exercises/", duration:"30 min", equipment:"Chair", impact:"None", section:"chair", difficulty:"easy" },
+      { title:"Get Fit at Home – 30 Minute Chair Exercises for Seniors (Day 1)", channel:"(Senior fitness channel)", url:"https://www.youtube.com/watch?v=DP0oP6ZDIJQ", duration:"30 min", equipment:"Chair", impact:"None (seated)", section:"chair", difficulty:"easy" },
+      { title:"30 Minute Seated Exercise – Whole Body", channel:"Cheri Schultz", url:"https://www.cherischultz.com/30-minute-seated-exercise", duration:"30 min", equipment:"Chair", impact:"None (seated)", section:"chair", difficulty:"easy" },
+      { title:"Chair Workout for Seniors & Beginners – Cardio + Strength + Stretch, Osteoporosis Friendly", channel:"SeniorShape", url:"https://www.seniorshape.com/videos/v/7lml4abc7gfggrgaw2xbfd948khsgl", duration:"27 min", equipment:"Chair", impact:"Low", section:"chair", difficulty:"easy" },
+      { title:"30-Minute Fat Burning Walking Workout", channel:"Fabulous50s", url:"https://www.youtube.com/watch?v=R8rmnN2JLmI", duration:"30 min", equipment:"None", impact:"None", section:"walkdance", difficulty:"easy" },
+      { title:"30 Min Walking Workout for Beginners & Seniors", channel:"SeniorShape", url:"https://www.youtube.com/watch?v=-d3C7CVRh7E", duration:"30 min", equipment:"None", impact:"None", section:"walkdance", difficulty:"easy" },
+      { title:"30 Min Fat Burning Cardio Indoor Walking", channel:"Fabulous50s", url:"https://www.youtube.com/watch?v=NjfYo0YOVas", duration:"30 min", equipment:"None", impact:"None", section:"walkdance", difficulty:"easy" },
+      { title:"30 Min Walking Cardio – No Jumping, No Squats, No Lunges", channel:"Emi Wong", url:"https://www.youtube.com/watch?v=sMIatEvTACI", duration:"30 min", equipment:"None", impact:"None", section:"walkdance", difficulty:"easy" },
+      { title:"30 Min Indoor Walking Workout for Women Over 50", channel:"Fabulous50s", url:"https://www.youtube.com/playlist?list=PL32YrxpjeHf7dtLFBKBm_2FPYu4Plab2a", duration:"30 min", equipment:"None", impact:"None", section:"walkdance", difficulty:"easy" },
+      { title:"30 Min Low Impact Walk at Home – Cardio Aerobics", channel:"Leslie Sansone", url:"https://m.youtube.com/watch?v=wIr2C2JH728", duration:"30 min", equipment:"None", impact:"None", section:"walkdance", difficulty:"easy" },
+      { title:"30 Min Cardio Kickboxing – Punch, Kick & Burn", channel:"POPSUGAR Fitness", url:"https://www.youtube.com/watch?v=CyPo9gq2qbw", duration:"30 min", equipment:"None", impact:"Moderate", section:"walkdance", difficulty:"medium" },
+      { title:"30 Minute Cardio Kickboxing Workout", channel:"Fitness Blender", url:"https://www.youtube.com/watch?v=tXsuyzvtOC8", duration:"30 min", equipment:"None", impact:"Moderate", section:"walkdance", difficulty:"medium" },
+      { title:"30 Min Cardio Kickboxing (Fat Burning)", channel:"Heather Robertson", url:"https://www.youtube.com/watch?v=ASqBkKKrjMk", duration:"30 min", equipment:"None", impact:"Moderate–High", section:"walkdance", difficulty:"hard" },
+      { title:"30-Min No-Equipment Cardio Kickboxing", channel:"Kick It by Eliza", url:"https://www.youtube.com/watch?v=6oLg5fFe5ww", duration:"30 min", equipment:"None", impact:"Moderate–High", section:"walkdance", difficulty:"hard" },
+      { title:"30 Min Cardio Kickboxing – All Standing", channel:"POPSUGAR Fitness", url:"https://www.youtube.com/watch?v=GwdSA2vH2jU", duration:"30 min", equipment:"None", impact:"Moderate", section:"walkdance", difficulty:"medium" },
+      { title:"Cardio Kickboxing for Beginners & Seniors", channel:"SeniorShape", url:"https://www.youtube.com/watch?v=XOSJdJbkYkM", duration:"30 min", equipment:"None", impact:"Low", section:"walkdance", difficulty:"easy" },
+      { title:"30 Min Cardio Kickboxing (No Equipment)", channel:"HASfit", url:"https://hasfit.com/workouts/home/cardio-aerobic/30-minute-cardio-kickboxing-workout/", duration:"30 min", equipment:"None (opt. light weights)", impact:"Moderate", section:"walkdance", difficulty:"medium" },
+      { title:"30 Min Cardio Kickboxing – Low Impact", channel:"Taylor Sharp", url:"https://2lazy4gym.com/2025/11/13/30-min-cardio-kickboxing-workout-no-equipment-low-impact/", duration:"33 min", equipment:"None", impact:"Low–Moderate", section:"walkdance", difficulty:"medium" },
+      { title:"30 Min Dance Workout – No Equipment Cardio Dance", channel:"The Fitness Marshall", url:"https://www.youtube.com/watch?v=StmyxV5Z5lA", duration:"30 min", equipment:"None", impact:"Moderate", section:"walkdance", difficulty:"medium" },
+      { title:"30 Min Dance Cardio Aerobics – Knee Friendly, No Jumping", channel:"Fabulous50s", url:"https://www.youtube.com/watch?v=X_-qAfMre-E", duration:"30 min", equipment:"None", impact:"Low", section:"walkdance", difficulty:"easy" },
+      { title:"30 Min Cardio Dance – Intense & Fast Fat Burn, Latin Music", channel:"POPSUGAR Fitness", url:"https://www.youtube.com/watch?v=NFQv2ESfKNY", duration:"30 min", equipment:"None", impact:"Moderate–High", section:"walkdance", difficulty:"hard" },
+      { title:"30-Minute Cardio Dance Workout", channel:"Equinox (Nicole Steen)", url:"https://www.youtube.com/watch?v=IdBESRDwo_8", duration:"30 min", equipment:"None", impact:"Moderate", section:"walkdance", difficulty:"medium" },
+      { title:"30-Minute Caribbean Cardio Dance Workout", channel:"POPSUGAR Fitness", url:"https://www.youtube.com/watch?v=AVyRmOdNO0U", duration:"30 min", equipment:"None", impact:"Moderate", section:"walkdance", difficulty:"medium" },
+      { title:"30-Minute Feel Good Dance Cardio Workout", channel:"Amanda Kloots", url:"https://www.youtube.com/watch?v=8TOIWNAVADw", duration:"30 min", equipment:"None", impact:"Moderate", section:"walkdance", difficulty:"medium" },
+      { title:"30 Min Fun Dance Cardio Fitness – Pop Hits Mix", channel:"The Fitness Marshall", url:"https://www.youtube.com/watch?v=HBLrC2Ows-g", duration:"30 min", equipment:"None", impact:"Moderate", section:"walkdance", difficulty:"medium" },
+      { title:"30 Min Diet Dance Workout – Knee Friendly, No Jumping", channel:"Fabulous50s", url:"https://www.youtube.com/watch?v=xAgKR-OBDIU", duration:"30 min", equipment:"None", impact:"Low", section:"walkdance", difficulty:"easy" },
+      { title:"20 Minute Zumba Fitness – Dance Fitness, Full Body/No Equipment Vol. 2", channel:"A-Sulu Fitness", url:"https://www.youtube.com/watch?v=HhR9jUIPtnY", duration:"30 min", equipment:"None", impact:"Moderate", section:"walkdance", difficulty:"medium" },
+      { title:"30 Minutes Zumba Dance Workout – Full Video", channel:"OneHowTo", url:"https://www.youtube.com/watch?v=qAJ6EQtGZ28", duration:"30 min", equipment:"None", impact:"Moderate", section:"walkdance", difficulty:"medium" },
+      { title:"30 Minute Dance Workout at Home – Zumba Class", channel:"Mira Pham", url:"https://www.youtube.com/watch?v=65GsFshIfNw", duration:"30 min", equipment:"None", impact:"Moderate", section:"walkdance", difficulty:"medium" },
+      { title:"Zumba 30 Min Dance Workout – for Beginners", channel:"Rick's Fitness", url:"https://www.youtube.com/watch?v=LrTBgC0Dhsc", duration:"30 min", equipment:"None", impact:"Moderate", section:"walkdance", difficulty:"medium" },
+      { title:"30-Minute Zumba Workouts (Playlist)", channel:"Various Zumba Instructors", url:"https://www.youtube.com/playlist?list=PLCYaLZmIYxC6QmtHZPJgolY4XJ6JX__ru", duration:"30 min each", equipment:"None", impact:"Moderate", section:"walkdance", difficulty:"medium" },
+      { title:"30 Min Fat Burning HIIT Cardio – Jump Rope HIIT (Jump Rope Optional)", channel:"MadFit", url:"https://www.youtube.com/watch?v=D9UxBKoPC7s", duration:"30 min", equipment:"None (rope optional)", impact:"Moderate–High", section:"walkdance", difficulty:"hard" },
+      { title:"30 Min Threshold Jump Rope Cardio – Build Endurance", channel:"(Cardio channel)", url:"https://www.youtube.com/watch?v=dE5FIP0j7nw", duration:"30 min", equipment:"Jump rope", impact:"High", section:"walkdance", difficulty:"hard" },
+      { title:"30 Min Jump Rope Workouts (Playlist)", channel:"Phoenix Fitness", url:"https://www.youtube.com/playlist?list=PLHC1xQKkjX-JCH7SUDSMyhkcjNP3PcY4t", duration:"30 min each", equipment:"Jump rope", impact:"Moderate–High", section:"walkdance", difficulty:"medium" },
+      { title:"30 Min Cardio Jump Rope Workout", channel:"Jump Rope Dudes", url:"https://www.youtube.com/watch?v=ixtUBGDQLr4", duration:"30 min", equipment:"Jump rope", impact:"Moderate–High", section:"walkdance", difficulty:"hard" },
+      { title:"30-Min Full Jump Rope Workout", channel:"(Cardio channel)", url:"https://m.youtube.com/watch?v=vO8SLNZEBdI", duration:"30 min", equipment:"Jump rope", impact:"High", section:"walkdance", difficulty:"hard" },
+      { title:"Jump Rope Workouts (Playlist)", channel:"Jump Rope Dudes", url:"https://www.youtube.com/playlist?list=PLp040-vWPWG7AKLxctFaChIESp9w0KgNa", duration:"Varies", equipment:"Jump rope", impact:"Moderate–High", section:"walkdance", difficulty:"hard" },
+      { title:"How to Use Household Items For At Home Workouts (No Gym Equipment)", channel:"Fitness Blender / Home Fitness", url:"https://www.youtube.com/watch?v=Dreu6cmePBU", duration:"30 min", equipment:"Chair, towel, water bottles", impact:"Low–Moderate", section:"household", difficulty:"medium" },
+      { title:"Full Body Water Bottle Workout – At Home", channel:"Svelte Training", url:"https://www.youtube.com/watch?v=bGXIt8zR3os", duration:"30 min", equipment:"Water bottles (as dumbbells)", impact:"Low", section:"household", difficulty:"medium" },
+      { title:"Full Body Water Bottle Workout At Home", channel:"Fit Tak", url:"https://www.youtube.com/watch?v=iHGSczzt37o", duration:"30 min", equipment:"Water bottles (as dumbbells)", impact:"Low", section:"household", difficulty:"medium" },
+      { title:"Fun Exercises Using Household Items (Playlist)", channel:"POPSUGAR Fitness", url:"https://www.youtube.com/playlist?list=PLCY8Yq4LJ5fFozUzmRT5ohkjeQ2S6rFEk", duration:"Varies", equipment:"Towels, chairs, pillows, cans", impact:"Low", section:"household", difficulty:"medium" },
+      { title:"Full-Body Home: Water-Bottle Resistance (Guided Plan)", channel:"WorkoutLabs Fit", url:"https://workoutlabs.com/fit/wkt/chLM2GJ/full-body-home-water-bottle-resistance/", duration:"45 min", equipment:"2 water bottles", impact:"Low", section:"household", difficulty:"medium" },
+      { title:"Home Water-Bottle Endurance (Guided Plan)", channel:"WorkoutLabs Fit", url:"https://workoutlabs.com/fit/wkt/iDusGWd/home-water-bottle-endurance/", duration:"42 min", equipment:"2 water bottles", impact:"Low", section:"household", difficulty:"medium" },
+      { title:"Dish Towel Total Body YogaBurn", channel:"Define Fettle", url:"https://definefettle.com/blog/2020/4/19/dish-towel-total-body-yogaburn-30-minutes", duration:"30 min", equipment:"2 dish towels", impact:"Low", section:"household", difficulty:"medium" },
+      { title:"Towel Total Body Workout – 30 Minutes, Bodyweight", channel:"(Home fitness channel)", url:"https://www.youtube.com/watch?v=q8dBQigOD6U", duration:"30 min", equipment:"Hand towel", impact:"Low", section:"household", difficulty:"medium" },
+      { title:"30 Min Full Body Workout – No Equipment, Complete HIIT (Towel + Mat)", channel:"Calum Taylor / Taylor Made Training", url:"https://www.taylormadetraining.uk/tmt-workouts/30-min-full-body-workout-no-equipment-complete-hiit-workout", duration:"30 min", equipment:"Towel + mat (optional)", impact:"Moderate", section:"household", difficulty:"medium" },
+      { title:"Shoulders, Abs and Glutes Towel Workout – 30 Min Pilates", channel:"(Pilates channel)", url:"https://www.youtube.com/watch?v=kEFEU-_LSgU", duration:"30 min", equipment:"Towel", impact:"Low", section:"household", difficulty:"medium" },
+      { title:"12 Pregnancy Safe Exercises – All Trimesters", channel:"Nourish Move Love", url:"https://www.nourishmovelove.com/35-minute-bodyweight-prenatal-workout/", duration:"35 min", equipment:"None (chair optional)", impact:"Low", section:"prenatal", difficulty:"easy" },
+      { title:"30-Min Pregnancy Workout – Full Body Prenatal Strength", channel:"Nourish Move Love", url:"https://www.nourishmovelove.com/30-minute-full-body-pregnancy-workout/", duration:"30 min", equipment:"Dumbbells (optional)", impact:"Low", section:"prenatal", difficulty:"medium" },
+      { title:"30-Minute Full Body Pregnancy Workout (All Trimesters)", channel:"Nourish Move Love", url:"https://www.nourishmovelove.com/strength-training-30-minute-pregnancy-workout/", duration:"30 min", equipment:"Dumbbells (optional)", impact:"Low", section:"prenatal", difficulty:"medium" },
+      { title:"30-Minute Prenatal Yoga Flow", channel:"Nourish Move Love", url:"https://www.nourishmovelove.com/prenatal-yoga-at-home/", duration:"30 min", equipment:"None", impact:"None", section:"prenatal", difficulty:"easy" },
+      { title:"30 Min Full Body Pregnancy Workout at Home – All Trimesters", channel:"MadFit", url:"https://www.youtube.com/watch?v=hXuDYMORye0", duration:"30 min", equipment:"None", impact:"Low", section:"prenatal", difficulty:"medium" },
+      { title:"30-Minute Standing Prenatal Workout – Strength and Steps", channel:"Nourish Move Love", url:"https://www.nourishmovelove.com/standing-prenatal-workout/", duration:"30 min", equipment:"Dumbbells (optional)", impact:"Low", section:"prenatal", difficulty:"medium" },
+      { title:"30 Min Prenatal Yoga Workout – Gentle, Pregnancy Safe", channel:"Yoga with Kassandra", url:"https://www.youtube.com/watch?v=nLgAG30Ocuo", duration:"30 min", equipment:"None", impact:"None", section:"prenatal", difficulty:"easy" },
+    ];
+    WORKOUTS.forEach((w, i) => { w.id = i; });
+
+    const RULES = {
+      hard: {
+        label: "75 HARD", emoji:"🔥",
+        color:"#20352a",
+        workouts:"2 workouts/day, one outside",
+        diet:"Strict diet, no cheats",
+        water:"1 gallon/day",
+        reading:"10 pages, no audiobooks",
+        photo:"Daily progress photo",
+        restart:"Must restart at mistake",
+        required:["workouts","outdoor","diet","water","reading","photo"],
+        tasks:{
+          workouts:"Complete 2 workouts today",
+          outdoor:"At least 1 workout was outside",
+          diet:"Followed strict diet / no cheats",
+          water:"Drank 1 gallon of water",
+          reading:"Read 10 pages, no audiobooks",
+          photo:"Took daily progress photo"
+        }
+      },
+      medium: {
+        label: "75 MEDIUM", emoji:"⚖️",
+        color:"#345d6a",
+        workouts:"1 workout/day, anywhere",
+        diet:"Healthy eating, 1 treat/week",
+        water:"80–100 oz/day",
+        reading:"10 pages or audiobook",
+        photo:"Progress photo 3–4x/week",
+        restart:"Restart only if quitting",
+        required:["workouts","diet","water","reading"],
+        tasks:{
+          workouts:"Completed 1 workout today",
+          diet:"Ate healthy / stayed within treat rule",
+          water:"Drank 80–100 oz water",
+          reading:"Read/listened to 10 pages",
+          photo:"Progress photo today, optional but tracked"
+        }
+      },
+      soft: {
+        label: "75 SOFT", emoji:"🌿",
+        color:"#44624a",
+        workouts:"1 activity/day",
+        diet:"Healthy, flexible",
+        water:"~64 oz/day",
+        reading:"10 pages, any book",
+        photo:"Optional",
+        restart:"No restart needed",
+        required:["workouts","diet","water","reading"],
+        tasks:{
+          workouts:"Moved your body / any activity",
+          diet:"Made healthy, flexible food choices",
+          water:"Drank about 64 oz water",
+          reading:"Read 10 pages, any book",
+          photo:"Progress photo, optional"
+        }
+      }
+    };
+
+    let current = localStorage.getItem("challenge75_current") || "hard";
+    let selectedDay = Number(localStorage.getItem("challenge75_selected_day") || 1);
+    let theme = localStorage.getItem("challenge75_theme") || "pastel";
+    let userName = localStorage.getItem("challenge75_user_name") || "";
+
+    const $ = id => document.getElementById(id);
+    const storageKey = challenge => `challenge75_v2_${challenge}`;
+    const startKey = challenge => `challenge75_start_${challenge}`;
+    const ALL_KEYS = Object.keys(RULES).map(storageKey)
+      .concat(Object.keys(RULES).map(startKey))
+      .concat(["challenge75_current","challenge75_selected_day","challenge75_script_url","challenge75_theme","challenge75_lib_favorites","challenge75_lib_history","challenge75_lib_pick","challenge75_user_name","challenge75_workout_mode"]);
+
+    const libFilters = { category:"all", difficulty:"all", equipment:"all" };
+    function loadJsonKey(key, fallback){ try{ const raw=localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; }catch(e){ return fallback; } }
+    let libFavorites = loadJsonKey("challenge75_lib_favorites", []);
+    let libHistory = loadJsonKey("challenge75_lib_history", []);
+    let currentPickId = localStorage.getItem("challenge75_lib_pick") !== null ? Number(localStorage.getItem("challenge75_lib_pick")) : null;
+    let workoutMode = localStorage.getItem("challenge75_workout_mode") || "library";
+
+    function blankDay(day){
+      return { day, completed:false, tasks:{}, waterActual:"", pagesRead:"", mood:"", energy:"", weight:"", workoutNotes:"", meals:"", journal:"", lastSaved:"" };
+    }
+    function getData(challenge=current){
+      const raw = localStorage.getItem(storageKey(challenge));
+      if(raw){
+        try{
+          const parsed = JSON.parse(raw);
+          if(Array.isArray(parsed) && parsed.length === TOTAL_DAYS) return parsed;
+        }catch(e){}
+      }
+      return Array.from({length:TOTAL_DAYS},(_,i)=>blankDay(i+1));
+    }
+    function setData(data, challenge=current){ localStorage.setItem(storageKey(challenge), JSON.stringify(data)); }
+    function currentDayObj(){ return getData()[selectedDay-1]; }
+    function toast(message){ const t=$("toast"); t.textContent=message; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),2800); }
+
+    /* ---------- date helpers ---------- */
+    function parseLocalDate(str){
+      if(!str) return null;
+      const [y,m,d] = str.split("-").map(Number);
+      if(!y||!m||!d) return null;
+      return new Date(y, m-1, d);
+    }
+    function todayLocal(){ const t=new Date(); return new Date(t.getFullYear(), t.getMonth(), t.getDate()); }
+    function addDays(date, n){ const d=new Date(date); d.setDate(d.getDate()+n); return d; }
+    function fmtDate(date){ return date.toLocaleDateString(undefined,{ year:"numeric", month:"short", day:"numeric" }); }
+    function toISODate(date){ const y=date.getFullYear(); const m=String(date.getMonth()+1).padStart(2,"0"); const d=String(date.getDate()).padStart(2,"0"); return `${y}-${m}-${d}`; }
+    function challengeDateFor(dayNumber){ const startStr=getStart(); if(!startStr) return ""; const start=parseLocalDate(startStr); if(!start) return ""; return toISODate(addDays(start, dayNumber-1)); }
+    function getStart(){ return localStorage.getItem(startKey(current)) || ""; }
+    function setStart(v){ if(v) localStorage.setItem(startKey(current), v); else localStorage.removeItem(startKey(current)); }
+    function dayNumberForToday(startStr){
+      const start = parseLocalDate(startStr);
+      if(!start) return null;
+      const diff = Math.round((todayLocal() - start) / 86400000) + 1;
+      if(diff < 1 || diff > TOTAL_DAYS) return null;
+      return diff;
+    }
+
+    /* ---------- theming ---------- */
+    function renderThemeButtons(){
+      $("themeButtons").innerHTML = THEMES.map(t => `<button class="theme-btn ${t.key===theme?'active':''}" data-theme-key="${t.key}">${t.emoji} ${t.label}</button>`).join("");
+      document.querySelectorAll(".theme-btn").forEach(btn => btn.addEventListener("click", () => {
+        theme = btn.dataset.themeKey;
+        localStorage.setItem("challenge75_theme", theme);
+        document.body.setAttribute("data-theme", theme);
+        renderThemeButtons();
+      }));
+    }
+
+    function renderChallengeButtons(){
+      $("challengeButtons").innerHTML = Object.entries(RULES).map(([key,r]) => `<button class="challenge-btn ${key===current?'active':''}" data-key="${key}">${r.emoji} ${r.label}</button>`).join("");
+      document.querySelectorAll(".challenge-btn").forEach(btn => btn.addEventListener("click", () => {
+        saveCurrentInputs(false);
+        current = btn.dataset.key;
+        localStorage.setItem("challenge75_current", current);
+        selectedDay = 1;
+        localStorage.setItem("challenge75_selected_day", selectedDay);
+        renderAll();
+      }));
+    }
+
+    function isComplete(dayObj){
+      const required = RULES[current].required;
+      return required.every(k => !!dayObj.tasks?.[k]);
+    }
+    function calcStreak(data){
+      let streak=0;
+      for(const d of data){ if(d.completed) streak++; else streak=0; }
+      return streak;
+    }
+
+    function renderHeader(){
+      const r = RULES[current];
+      $("selectedChallengeTitle").textContent = `${r.emoji} ${r.label}`;
+      $("selectedChallengeSummary").textContent = `${r.workouts} · ${r.diet} · ${r.water} · ${r.reading} · ${r.restart}`;
+      document.querySelector(".challenge-card").style.background = r.color;
+    }
+    function renderRules(){
+      const r=RULES[current];
+      const cards = [
+        ["🏋️","Workouts",r.workouts],["🥗","Diet",r.diet],["💧","Water",r.water],["📚","Reading",r.reading],["📸","Photos / Restart",`${r.photo}. ${r.restart}.`]
+      ];
+      $("rulesGrid").innerHTML = cards.map(c=>`<div class="rule"><div class="icon">${c[0]}</div><b>${c[1]}</b><span>${c[2]}</span></div>`).join("");
+    }
+    function renderTimeline(){
+      const startStr = getStart();
+      $("startDate").value = startStr;
+      if(!startStr){
+        $("endDateOut").textContent = "Set a start date";
+        $("daysLeftOut").textContent = "-";
+        $("jumpTodayBtn").disabled = true;
+        return;
+      }
+      const start = parseLocalDate(startStr);
+      const end = addDays(start, TOTAL_DAYS - 1);
+      const today = todayLocal();
+      let daysLeft;
+      if(today < start) daysLeft = `Starts ${fmtDate(start)}`;
+      else if(today > end) daysLeft = "Challenge complete 🎉";
+      else daysLeft = `${Math.round((end - today)/86400000) + 1} of ${TOTAL_DAYS}`;
+      $("endDateOut").textContent = fmtDate(end);
+      $("daysLeftOut").textContent = daysLeft;
+      $("jumpTodayBtn").disabled = dayNumberForToday(startStr) === null;
+    }
+    function renderKpis(){
+      const data=getData();
+      const completed=data.filter(d=>d.completed).length;
+      $("completedKpi").textContent=completed;
+      $("percentKpi").textContent=Math.round(completed/TOTAL_DAYS*100)+"%";
+      $("streakKpi").textContent=calcStreak(data);
+      const startStr = getStart();
+      if(startStr){
+        const start = parseLocalDate(startStr);
+        const end = addDays(start, TOTAL_DAYS - 1);
+        const today = todayLocal();
+        let left;
+        if(today < start) left = TOTAL_DAYS;
+        else if(today > end) left = 0;
+        else left = Math.round((end - today)/86400000);
+        $("leftKpi").textContent = left;
+        $("leftKpiLabel").textContent = "days left (by date)";
+      } else {
+        $("leftKpi").textContent = TOTAL_DAYS - completed;
+        $("leftKpiLabel").textContent = "days left";
+      }
+      $("saveStatus").textContent = completed ? `● ${completed} days completed locally` : "● Local tracker ready";
+    }
+    function renderDays(){
+      const data=getData();
+      const todayDayNum = dayNumberForToday(getStart());
+      $("daysGrid").innerHTML = data.map(d => `<button class="day ${d.completed?'complete':''} ${d.day===selectedDay?'selected':''} ${d.day===todayDayNum?'today':''}" data-day="${d.day}" title="${d.day===todayDayNum?'Today':''}"><span>${d.day}</span><span class="dot">${d.completed?'done':'open'}</span></button>`).join("");
+      document.querySelectorAll(".day").forEach(day => day.addEventListener("click",()=>{
+        saveCurrentInputs(false);
+        selectedDay = Number(day.dataset.day);
+        localStorage.setItem("challenge75_selected_day", selectedDay);
+        renderAll();
+      }));
+    }
+    function renderJournal(){
+      const r=RULES[current];
+      const d=currentDayObj();
+      $("selectedDayBadge").textContent = `${r.emoji} ${r.label} · Day ${selectedDay}`;
+      $("quoteOfDay").textContent = QUOTES[(selectedDay-1) % QUOTES.length];
+      const taskKeys = Array.from(new Set([...r.required, "photo"]));
+      $("taskChecks").innerHTML = taskKeys.map(k => {
+        const required = r.required.includes(k);
+        return `<label class="check"><input type="checkbox" data-task="${k}" ${d.tasks?.[k]?'checked':''}/><span>${r.tasks[k]} ${required?'<b>Required</b>':'<em>Optional</em>'}</span></label>`;
+      }).join("");
+      $("waterActual").value=d.waterActual||"";
+      $("pagesRead").value=d.pagesRead||"";
+      $("mood").value=d.mood||"";
+      $("energy").value=d.energy||"";
+      $("weight").value=d.weight||"";
+      $("workoutNotes").value=d.workoutNotes||"";
+      $("meals").value=d.meals||"";
+      $("journal").value=d.journal||"";
+      $("completionHint").textContent = `${r.label}: day completes when required tasks are checked. ${r.photo !== 'Optional' ? 'Photo rule is shown in the tracker too.' : 'Photos are optional for Soft.'}`;
+      document.querySelectorAll("#taskChecks input").forEach(cb => cb.addEventListener("change",()=>saveCurrentInputs(false)));
+    }
+
+    function saveCurrentInputs(show=true){
+      const data=getData();
+      const d=data[selectedDay-1] || blankDay(selectedDay);
+      const tasks={};
+      document.querySelectorAll("#taskChecks input").forEach(cb=>tasks[cb.dataset.task]=cb.checked);
+      d.tasks=tasks;
+      d.waterActual=$("waterActual").value.trim();
+      d.pagesRead=$("pagesRead").value.trim();
+      d.mood=$("mood").value;
+      d.energy=$("energy").value;
+      d.weight=$("weight").value.trim();
+      d.workoutNotes=$("workoutNotes").value.trim();
+      d.meals=$("meals").value.trim();
+      d.journal=$("journal").value.trim();
+      d.completed=isComplete(d);
+      d.lastSaved=new Date().toISOString();
+      data[selectedDay-1]=d;
+      setData(data);
+      if(show) toast(`Saved Day ${selectedDay} locally.`);
+      renderKpis();
+      renderDays();
+      return d;
+    }
+
+    function buildPayload(dayObj){
+      const r=RULES[current];
+      return {
+        action:"upsertDay",
+        savedAt:new Date().toISOString(),
+        challengeType:current,
+        challengeLabel:r.label,
+        day:dayObj.day,
+        day1Date:getStart(),
+        challengeDate:challengeDateFor(dayObj.day),
+        completed:!!dayObj.completed,
+        tasks:dayObj.tasks || {},
+        rules:{workouts:r.workouts,diet:r.diet,water:r.water,reading:r.reading,photo:r.photo,restart:r.restart,required:r.required.join(", ")},
+        actuals:{water:dayObj.waterActual || "", pages:dayObj.pagesRead || ""},
+        mood:dayObj.mood || "",
+        energy:dayObj.energy || "",
+        weight:dayObj.weight || "",
+        workoutNotes:dayObj.workoutNotes || "",
+        meals:dayObj.meals || "",
+        journal:dayObj.journal || "",
+        quote: QUOTES[(dayObj.day-1) % QUOTES.length],
+        storageKey:`${r.label}-day-${dayObj.day}`
+      };
+    }
+
+    async function syncPayload(payload, label="day"){
+      const url = localStorage.getItem("challenge75_script_url") || "";
+      if(!url){ $("syncStatus").textContent="● Local only - add Script URL"; return false; }
+      try{
+        await fetch(url, { method:"POST", mode:"no-cors", headers:{"Content-Type":"text/plain;charset=utf-8"}, body: JSON.stringify(payload) });
+        $("syncStatus").textContent = `● Sent ${label} to Google Sheet`;
+        return true;
+      }catch(err){
+        $("syncStatus").textContent = "● Sync failed - local saved";
+        console.error(err);
+        return false;
+      }
+    }
+
+    function clearSelectedDay(){
+      if(!confirm(`Clear Day ${selectedDay} for ${RULES[current].label}?`)) return;
+      const data=getData();
+      data[selectedDay-1]=blankDay(selectedDay);
+      setData(data);
+      renderAll();
+      toast(`Day ${selectedDay} cleared locally.`);
+    }
+    function resetChallenge(){
+      if(!confirm(`Reset all 75 days for ${RULES[current].label}? This only resets your browser copy. Existing Google Sheet rows will remain.`)) return;
+      localStorage.removeItem(storageKey(current));
+      selectedDay=1;
+      renderAll();
+      toast(`${RULES[current].label} reset locally.`);
+    }
+    function exportCsv(){
+      saveCurrentInputs(false);
+      const data=getData();
+      const startStr=getStart();
+      const rows=[["Challenge","Day","Day 1 Date","Challenge Date","Quote","Completed","Workouts","Outdoor","Diet","Water","Reading","Photo","Water Actual","Pages Read","Mood","Energy","Weight","Workout Notes","Meals","Journal","Last Saved"]];
+      data.forEach(d=>rows.push([RULES[current].label,d.day,startStr,challengeDateFor(d.day),QUOTES[(d.day-1)%QUOTES.length],d.completed,!!d.tasks.workouts,!!d.tasks.outdoor,!!d.tasks.diet,!!d.tasks.water,!!d.tasks.reading,!!d.tasks.photo,d.waterActual,d.pagesRead,d.mood,d.energy,d.weight,d.workoutNotes,d.meals,d.journal,d.lastSaved]));
+      const csv = rows.map(row=>row.map(v=>`"${String(v??"").replaceAll('"','""')}"`).join(",")).join("\n");
+      const blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
+      const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=`${current}_75_challenge_export.csv`; a.click(); URL.revokeObjectURL(a.href);
+      toast("CSV exported.");
+    }
+    function backupJson(){
+      saveCurrentInputs(false);
+      const backup={ exportedAt:new Date().toISOString(), version:3, data:{} };
+      ALL_KEYS.forEach(k => { const v=localStorage.getItem(k); if(v!==null) backup.data[k]=v; });
+      const blob = new Blob([JSON.stringify(backup,null,2)], {type:"application/json"});
+      const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=`75_challenge_full_backup.json`; a.click(); URL.revokeObjectURL(a.href);
+      toast("Full backup downloaded - keep it somewhere safe.");
+    }
+    function restoreJsonFile(file){
+      const reader = new FileReader();
+      reader.onload = () => {
+        try{
+          const parsed = JSON.parse(reader.result);
+          const payload = parsed.data || parsed;
+          if(!payload || typeof payload !== "object") throw new Error("bad file");
+          if(!confirm("Restore this backup? It will overwrite your current progress for all three challenges.")) return;
+          Object.entries(payload).forEach(([k,v]) => { if(typeof v === "string") localStorage.setItem(k, v); });
+          theme = localStorage.getItem("challenge75_theme") || "pastel";
+          document.body.setAttribute("data-theme", theme);
+          libFavorites = loadJsonKey("challenge75_lib_favorites", []);
+          libHistory = loadJsonKey("challenge75_lib_history", []);
+          currentPickId = localStorage.getItem("challenge75_lib_pick") !== null ? Number(localStorage.getItem("challenge75_lib_pick")) : null;
+          userName = localStorage.getItem("challenge75_user_name") || "";
+          workoutMode = localStorage.getItem("challenge75_workout_mode") || "library";
+          renderAll();
+          toast("Backup restored.");
+        }catch(e){
+          toast("Couldn't read that file - please choose a backup .json from this tracker.");
+        }
+      };
+      reader.readAsText(file);
+    }
+    function saveUrl(){
+      const url=$("scriptUrl").value.trim();
+      if(!url){ localStorage.removeItem("challenge75_script_url"); $("syncStatus").textContent="● Local mode"; toast("Script URL removed."); return; }
+      localStorage.setItem("challenge75_script_url", url);
+      $("syncStatus").textContent="● Sheet URL saved";
+      toast("Google Apps Script URL saved.");
+    }
+    async function setupSheet(){
+      saveUrl();
+      const sent = await syncPayload({ action:"setup", savedAt:new Date().toISOString() }, "setup request");
+      toast(sent ? "Setup request sent. Check your Google Sheet tabs." : "Add your Script URL first, then setup tabs.");
+    }
+    async function saveAndSync(){
+      const d=saveCurrentInputs(true);
+      const sent = await syncPayload(buildPayload(d), `Day ${selectedDay}`);
+      toast(sent ? `Day ${selectedDay} saved and sent to Google Sheets.` : `Day ${selectedDay} saved locally. Add/check Script URL for Sheet sync.`);
+    }
+    function jumpToToday(){
+      const dayNum = dayNumberForToday(getStart());
+      if(dayNum === null){ toast("Today is outside this challenge's date range."); return; }
+      saveCurrentInputs(false);
+      selectedDay = dayNum;
+      localStorage.setItem("challenge75_selected_day", selectedDay);
+      renderAll();
+      toast(`Jumped to Day ${dayNum} - today.`);
+    }
+    /* ---------- workout video library ---------- */
+    function escapeHtml(s){
+      return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+    }
+    function getYouTubeId(url){
+      const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/live\/)([\w-]{6,15})/);
+      return m ? m[1] : null;
+    }
+    function equipBucket(text){
+      const t = text.toLowerCase();
+      if(t.startsWith("none")) return "none";
+      if(t.includes("dumbbell")) return "dumbbells";
+      if(t.includes("band")) return "band";
+      if(t.includes("chair")) return "chair";
+      return "other";
+    }
+    function saveLibFavorites(){ localStorage.setItem("challenge75_lib_favorites", JSON.stringify(libFavorites)); }
+    function prunedHistory(){
+      const cutoff = Date.now() - 30*86400000;
+      return libHistory.filter(h => new Date(h.shownAt).getTime() >= cutoff);
+    }
+    function saveLibHistory(){ libHistory = prunedHistory(); localStorage.setItem("challenge75_lib_history", JSON.stringify(libHistory)); }
+    function recentIdsWithinDays(days){
+      const cutoff = Date.now() - days*86400000;
+      return new Set(libHistory.filter(h => new Date(h.shownAt).getTime() >= cutoff).map(h => h.id));
+    }
+    function matchesLibFilters(w){
+      if(libFilters.category !== "all" && w.section !== libFilters.category) return false;
+      if(libFilters.difficulty !== "all" && w.difficulty !== libFilters.difficulty) return false;
+      if(libFilters.equipment !== "all" && equipBucket(w.equipment) !== libFilters.equipment) return false;
+      return true;
+    }
+    function filteredWorkouts(){ return WORKOUTS.filter(matchesLibFilters); }
+
+    function setCurrentPick(id, logIt){
+      currentPickId = id;
+      localStorage.setItem("challenge75_lib_pick", String(id));
+      if(logIt){
+        libHistory.push({ id, shownAt: new Date().toISOString() });
+        saveLibHistory();
+      }
+      renderLibrary();
+    }
+    function shuffleWorkout(){
+      const pool = filteredWorkouts();
+      if(pool.length === 0){ toast("No workouts match those filters - try widening them."); return; }
+      const avoid = recentIdsWithinDays(7);
+      let avail = pool.filter(w => !avoid.has(w.id));
+      let reused = false;
+      if(avail.length === 0){ avail = pool; reused = true; }
+      const pick = avail[Math.floor(Math.random() * avail.length)];
+      setCurrentPick(pick.id, true);
+      toast(reused ? `You've done every matching workout this week - repeating "${pick.title}".` : `Shuffled: ${pick.title}`);
+    }
+    function toggleFavorite(id){
+      libFavorites = libFavorites.includes(id) ? libFavorites.filter(x => x !== id) : libFavorites.concat(id);
+      saveLibFavorites();
+      renderLibrary();
+    }
+    function logPickToJournal(){
+      const w = WORKOUTS.find(x => x.id === currentPickId);
+      if(!w){ toast("Shuffle or pick a workout first."); return; }
+      const note = `${w.title} (${w.channel}) - ${w.url}`;
+      const existing = $("workoutNotes").value.trim();
+      $("workoutNotes").value = existing ? `${existing}\n${note}` : note;
+      const workoutsBox = document.querySelector('#taskChecks input[data-task="workouts"]');
+      if(workoutsBox) workoutsBox.checked = true;
+      saveCurrentInputs(true);
+      renderJournal();
+      toast(`Added "${w.title}" to Day ${selectedDay}'s workout notes.`);
+    }
+
+    function renderLibraryChips(){
+      const catOptions = [["all","All categories"]].concat(Object.entries(CATEGORY_META).map(([k,v]) => [k, v.label]));
+      $("libCategorySelect").innerHTML = catOptions.map(([key,label]) => `<option value="${key}" ${libFilters.category===key?'selected':''}>${label}</option>`).join("");
+      const diffOptions = [["all","All difficulties"],["easy","🟢 Easy"],["medium","🟡 Medium"],["hard","🔴 Hard"]];
+      $("libDifficultySelect").innerHTML = diffOptions.map(([key,label]) => `<option value="${key}" ${libFilters.difficulty===key?'selected':''}>${label}</option>`).join("");
+      const equipOptions = [["all","All equipment"],["none","No equipment"],["dumbbells","Dumbbells"],["band","Band"],["chair","Chair"]];
+      $("libEquipmentSelect").innerHTML = equipOptions.map(([key,label]) => `<option value="${key}" ${libFilters.equipment===key?'selected':''}>${label}</option>`).join("");
+    }
+    function renderFeatured(){
+      const w = currentPickId != null ? WORKOUTS.find(x => x.id === currentPickId) : null;
+      const el = $("libFeatured");
+      if(!w){ el.innerHTML = `<p class="tiny">Set your filters, then click "Shuffle a workout" to get a follow-along pick - or tap any video in the list to the right.</p>`; return; }
+      const vid = getYouTubeId(w.url);
+      const embedHtml = vid
+        ? `<a class="video-embed" href="${w.url}" target="_blank" rel="noopener">
+             <img class="thumb" src="https://img.youtube.com/vi/${vid}/hqdefault.jpg" alt="${escapeHtml(w.title)}" loading="lazy" />
+             <div class="play-overlay"><div class="play-circle">▶</div></div>
+             <span class="watch-label">Watch on YouTube ↗</span>
+           </a>`
+        : `<div class="video-embed no-embed"><a href="${w.url}" target="_blank" rel="noopener">Open "${escapeHtml(w.title)}" on ${escapeHtml(w.channel)} ↗</a></div>`;
+      el.innerHTML = `
+        <div style="font-weight:900;font-size:1.05rem">${escapeHtml(w.title)}</div>
+        <div class="tiny">${escapeHtml(w.channel)} · ${escapeHtml(w.duration)}</div>
+        ${embedHtml}
+        <div class="badge-row">
+          <span class="badge">${CATEGORY_META[w.section].label}</span>
+          <span class="badge">${w.difficulty.charAt(0).toUpperCase()+w.difficulty.slice(1)}</span>
+          <span class="badge">${escapeHtml(w.equipment)}</span>
+          <span class="badge">Impact: ${escapeHtml(w.impact)}</span>
+        </div>
+      `;
+    }
+    function renderLibraryList(){
+      const pool = filteredWorkouts();
+      $("libListCount").textContent = pool.length;
+      $("libCountStatus").textContent = `${pool.length} workout${pool.length===1?'':'s'} match`;
+      $("libList").innerHTML = pool.map(w => `
+        <div class="lib-row ${w.id===currentPickId?'picked':''}" data-pick="${w.id}">
+          <div>
+            <div class="lr-title">${escapeHtml(w.title)}</div>
+            <div class="lr-meta">${CATEGORY_META[w.section].label} · ${w.difficulty} · ${escapeHtml(w.equipment)} · ${escapeHtml(w.duration)}</div>
+          </div>
+          <button class="fav-star" data-fav="${w.id}" title="Save to favorites">${libFavorites.includes(w.id)?'⭐':'☆'}</button>
+        </div>
+      `).join("") || `<p class="tiny">No workouts match these filters yet - try widening them.</p>`;
+      document.querySelectorAll("[data-pick]").forEach(row => row.addEventListener("click", (e) => {
+        if(e.target.closest("[data-fav]")) return;
+        setCurrentPick(Number(row.dataset.pick), false);
+      }));
+      document.querySelectorAll("[data-fav]").forEach(btn => btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        toggleFavorite(Number(btn.dataset.fav));
+      }));
+    }
+    function renderFavoritesRow(){
+      if(libFavorites.length === 0){ $("libFavRow").innerHTML = `<span class="tiny">No favorites yet - tap the ☆ on any workout in the list below.</span>`; return; }
+      $("libFavRow").innerHTML = libFavorites.map(id => {
+        const w = WORKOUTS.find(x => x.id === id);
+        if(!w) return "";
+        const short = w.title.length > 28 ? w.title.slice(0,28) + "…" : w.title;
+        return `<button class="history-chip" data-pick-fav="${id}">⭐ ${escapeHtml(short)}</button>`;
+      }).join("");
+      document.querySelectorAll("[data-pick-fav]").forEach(btn => btn.addEventListener("click", () => setCurrentPick(Number(btn.dataset.pickFav), false)));
+    }
+    function renderHistoryRow(){
+      const recent = prunedHistory()
+        .filter(h => Date.now() - new Date(h.shownAt).getTime() <= 7*86400000)
+        .sort((a,b) => new Date(b.shownAt) - new Date(a.shownAt));
+      if(recent.length === 0){ $("libHistoryRow").innerHTML = `<span class="tiny">Nothing shuffled yet this week.</span>`; return; }
+      const seen = new Set();
+      const rows = [];
+      recent.forEach(h => {
+        if(seen.has(h.id)) return;
+        seen.add(h.id);
+        const w = WORKOUTS.find(x => x.id === h.id);
+        if(!w) return;
+        const short = w.title.length > 26 ? w.title.slice(0,26) + "…" : w.title;
+        rows.push(`<span class="history-chip" title="${new Date(h.shownAt).toLocaleDateString()}" data-pick-fav="${w.id}">${escapeHtml(short)}</span>`);
+      });
+      $("libHistoryRow").innerHTML = rows.join("") || `<span class="tiny">Nothing shuffled yet this week.</span>`;
+      document.querySelectorAll("#libHistoryRow [data-pick-fav]").forEach(chip => chip.addEventListener("click", () => setCurrentPick(Number(chip.dataset.pickFav), false)));
+    }
+    function renderNudge(){
+      const recent = prunedHistory().sort((a,b) => new Date(b.shownAt) - new Date(a.shownAt)).slice(0,2);
+      const bothHard = recent.length === 2 && recent.every(h => {
+        const w = WORKOUTS.find(x => x.id === h.id);
+        return w && (w.difficulty === "hard" || /high/i.test(w.impact));
+      });
+      if(!bothHard){ $("libNudge").innerHTML = ""; return; }
+      $("libNudge").innerHTML = `<div class="nudge-banner"><span>💛 Two tough sessions in a row - an easy or recovery day could feel good.</span><button id="nudgeEasyBtn">Show me an easy pick</button></div>`;
+      $("nudgeEasyBtn").addEventListener("click", () => {
+        libFilters.difficulty = "easy"; libFilters.category = "all"; libFilters.equipment = "all";
+        shuffleWorkout();
+      });
+    }
+    function renderWorkoutMode(){
+      $("modeLibraryBtn").classList.toggle("active", workoutMode === "library");
+      $("modeOwnBtn").classList.toggle("active", workoutMode === "own");
+      $("libraryWidget").style.display = workoutMode === "library" ? "" : "none";
+      $("ownWorkoutNote").style.display = workoutMode === "own" ? "" : "none";
+    }
+    function setWorkoutMode(mode){
+      workoutMode = mode;
+      localStorage.setItem("challenge75_workout_mode", mode);
+      renderWorkoutMode();
+    }
+    function renderLibrary(){
+      renderWorkoutMode();
+      renderLibraryChips();
+      renderFeatured();
+      renderLibraryList();
+      renderFavoritesRow();
+      renderHistoryRow();
+      renderNudge();
+    }
+
+    function renderTitle(){
+      $("mainTitle").textContent = userName.trim() ? `${userName.trim()}'s 75 Challenge Tracker` : "75 Challenge Tracker";
+      $("userName").value = userName;
+    }
+    function renderAll(){
+      document.body.setAttribute("data-theme", theme);
+      renderChallengeButtons(); renderThemeButtons(); renderTitle(); renderHeader(); renderRules(); renderTimeline(); renderKpis(); renderDays(); renderJournal(); renderLibrary();
+      $("scriptUrl").value = localStorage.getItem("challenge75_script_url") || "";
+      $("syncStatus").textContent = $("scriptUrl").value ? "● Sheet URL ready" : "● Local mode";
+      if(localStorage.getItem("challenge75_help_seen")) $("helpPanel").removeAttribute("open");
+    }
+    $("saveUrlBtn").addEventListener("click", saveUrl);
+    $("setupSheetBtn").addEventListener("click", setupSheet);
+    $("saveDayBtn").addEventListener("click", saveAndSync);
+    $("clearDayBtn").addEventListener("click", clearSelectedDay);
+    $("resetBtn").addEventListener("click", resetChallenge);
+    $("exportCsvBtn").addEventListener("click", exportCsv);
+    $("backupJsonBtn").addEventListener("click", backupJson);
+    $("restoreJsonBtn").addEventListener("click", () => $("fileImportInput").click());
+    $("fileImportInput").addEventListener("change", (e) => { if(e.target.files[0]) restoreJsonFile(e.target.files[0]); e.target.value=""; });
+    $("helpPanel").addEventListener("toggle", () => { if(!$("helpPanel").open) localStorage.setItem("challenge75_help_seen","1"); });
+    $("startDate").addEventListener("change", () => { setStart($("startDate").value); renderTimeline(); renderKpis(); renderDays(); });
+    $("jumpTodayBtn").addEventListener("click", jumpToToday);
+    $("userName").addEventListener("input", () => { userName = $("userName").value; localStorage.setItem("challenge75_user_name", userName); renderTitle(); });
+    $("modeLibraryBtn").addEventListener("click", () => setWorkoutMode("library"));
+    $("modeOwnBtn").addEventListener("click", () => setWorkoutMode("own"));
+    $("libCategorySelect").addEventListener("change", () => { libFilters.category = $("libCategorySelect").value; renderLibrary(); });
+    $("libDifficultySelect").addEventListener("change", () => { libFilters.difficulty = $("libDifficultySelect").value; renderLibrary(); });
+    $("libEquipmentSelect").addEventListener("change", () => { libFilters.equipment = $("libEquipmentSelect").value; renderLibrary(); });
+    $("libShuffleBtn").addEventListener("click", shuffleWorkout);
+    $("libFavBtn").addEventListener("click", () => { if(currentPickId == null){ toast("Shuffle or pick a workout first."); return; } toggleFavorite(currentPickId); });
+    $("libLogBtn").addEventListener("click", logPickToJournal);
+    ["waterActual","pagesRead","mood","energy","weight","workoutNotes","meals","journal"].forEach(id => $(id).addEventListener("input",()=>saveCurrentInputs(false)));
+    window.addEventListener("beforeunload",()=>saveCurrentInputs(false));
+    renderAll();
+  </script>
+</body>
+</html>
